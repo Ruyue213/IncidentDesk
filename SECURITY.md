@@ -16,7 +16,7 @@ Do not submit credentials, real logs, private source, personal paths, complete r
 
 ## Report a vulnerability
 
-Use **Security → Report a vulnerability** if this repository has GitHub private vulnerability reporting enabled. If a private channel is unavailable, open an issue requesting a private contact route without publishing exploit details; wait for the maintainer's response before sharing technical information. Do not infer a maintainer email address.
+Use [Security → Report a vulnerability](https://github.com/Ruyue213/IncidentDesk/security/advisories/new); private vulnerability reporting is enabled for this repository. If a private channel is unavailable, open an issue requesting a private contact route without publishing exploit details; wait for the maintainer's response before sharing technical information. Do not infer a maintainer email address.
 
 Include the affected version or commit, operating system, installation method, minimal synthetic reproduction, expected/actual behavior, and impact. Remove provider keys, private paths, and third-party data. Keep details private until the maintainer agrees on a fix and disclosure plan. No fixed response SLA or long-term support branch is currently promised.
 

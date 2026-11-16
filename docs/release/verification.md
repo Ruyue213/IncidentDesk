@@ -4,7 +4,7 @@ These are separate forms of evidence. Passing a workflow test does not establish
 
 | Check | Recorded result | Scope |
 | --- | --- | --- |
-| Local backend regression | 313 passed, 1 skipped | macOS, Python 3.12; includes an explicitly supplied real-service binary; skip is Linux procfs |
+| Local backend regression | 321 passed, 1 skipped | macOS, Python 3.12; includes an explicitly supplied real-service binary; skip is Linux procfs |
 | Frontend state contracts | 11 passed | Submission retry, frozen approval, durable events and stale-response handling |
 | Browser interaction contracts | 7 passed | Real Chrome, intercepted synthetic API; includes knowledge indexing, degraded retrieval, history gaps and cross-project races |
 | Browser workflow/recovery | 17 passed | Real isolated API/SQLite/Chrome with a network-blocked scripted model; zero provider calls |
@@ -21,3 +21,5 @@ The retrieval dataset was frozen before evaluation. [The retrieval protocol and 
 The release wheel and source archive are built from the clean public checkout, not the private development history. Release dependency constraints and SHA-256 checksums accompany them. Remote CI and its exact revision are linked by the GitHub release once executed; the local results above are not a claim that unrun CI passed.
 
 A later unavailable-target check exposed an early fixed graph-step limit. The failed attempt remains recorded. The fix derives the graph allowance from task call limits while retaining time, tool and spending guards. New tests cover an 11-round investigation and enforcement of a 3-call model budget. The follow-up report recognized the absent service and stated that its exit cause could not be established; no business process was started or modified.
+
+Cross-platform CI also exposed a macOS bootstrap-exec race. Startup now retains the actual child handle, proves high-resolution kernel birth independently of changing parentage, and freezes full identity after owned readiness. Unresolved STARTING records survive failure; double cancellation still collects and cleans up the new child; an unreaped zombie is positively distinguished from a live process with changed identity. Real child tests cover exec, reparenting, cancellation, unknown-claim retention and normal shutdown. Final local regression: 321 passed, one Linux-only skip.

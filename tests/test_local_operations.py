@@ -262,3 +262,18 @@ def test_launcher_rejects_reused_pid_even_when_command_matches(monkeypatch):
     assert not service.alive(12345, "api")
     monkeypatch.setattr(service, "process_identity", lambda pid: "original " + command)
     assert service.alive(12345, "api")
+
+
+def test_stop_retains_claim_and_never_signals_an_unverified_live_process(tmp_path, monkeypatch):
+    service = load_script("local_service")
+    state = tmp_path / "processes.json"
+    state.write_text(json.dumps({"phase": "READY", "api": 12345}))
+    monkeypatch.setattr(service, "STATE", state)
+    monkeypatch.setattr(service, "SERVICE_SETTINGS", tmp_path / "preferences.json")
+    monkeypatch.setattr(service, "recorded_process_exited", lambda *_: False)
+    monkeypatch.setattr(service, "alive", lambda *_: False)
+    signalled = []
+    monkeypatch.setattr(service.os, "kill", lambda *args: signalled.append(args))
+    with pytest.raises(RuntimeError, match="claim was retained"):
+        service.stop()
+    assert state.exists() and signalled == []

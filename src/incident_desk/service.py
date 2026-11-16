@@ -1,6 +1,7 @@
 """Start/stop the local API and worker; no shell, cloud hosting, or login-time installation."""
 
 import argparse
+import asyncio
 import fcntl
 import json
 import os
@@ -12,7 +13,14 @@ import time
 import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
+from subprocess import Popen
 
+from incident_desk.process_identity import (
+    owned_child_identity,
+    process_birth,
+    process_has_exited,
+    terminate_owned_child,
+)
 from incident_desk.runtime_paths import default_home
 
 LOCAL = default_home()
@@ -45,8 +53,12 @@ def alive(pid, role):
     identity = process_identity(pid)
     if not identity:
         return False
-    expected = saved().get("identities", {}).get(role)
-    if expected is not None and expected != identity:
+    state = saved()
+    expected = state.get("identities", {}).get(role)
+    if not expected or expected != identity:
+        return False
+    birth = state.get("births", {}).get(role)
+    if birth is not None and process_birth(pid) != tuple(birth):
         return False
     return f"-m incident_desk {role}" in identity or (
         "-m incident_desk --local-dir " in identity
@@ -95,16 +107,34 @@ def write_private(path, value):
 
 def stop():
     state = saved()
+    if unresolved_start(state):
+        raise RuntimeError("Previous startup is unresolved; inspect its processes before stopping")
     for role in ("worker", "api"):
         pid = state.get(role)
-        if pid and alive(pid, role):
-            os.kill(pid, signal.SIGTERM)
-            deadline = time.monotonic() + 5
-            while alive(pid, role) and time.monotonic() < deadline:
-                time.sleep(0.1)
-            if alive(pid, role):
+        if not pid or recorded_process_exited(state, role):
+            continue
+        if not alive(pid, role):
+            raise RuntimeError("Saved process identity is unverified; its claim was retained")
+        os.kill(pid, signal.SIGTERM)
+        deadline, escalated = time.monotonic() + 5, False
+        while not recorded_process_exited(state, role):
+            if not alive(pid, role):
+                if recorded_process_exited(state, role):
+                    break  # It exited between the kernel and complete-identity reads.
+                raise RuntimeError("Process identity changed while stopping; claim was retained")
+            if time.monotonic() >= deadline:
+                if escalated:
+                    raise RuntimeError("Process exit could not be confirmed; claim was retained")
                 os.kill(pid, signal.SIGKILL)
+                escalated, deadline = True, time.monotonic() + 5
+            time.sleep(0.1)
     STATE.unlink(missing_ok=True)
+
+
+def recorded_process_exited(state, role):
+    pid = state.get(role)
+    birth = state.get("births", {}).get(role)
+    return not pid or process_has_exited(pid, tuple(birth) if birth is not None else None)
 
 
 def status():
@@ -116,8 +146,33 @@ def status():
     }
 
 
+def unresolved_start(state):
+    if state.get("phase") != "STARTING":
+        return False
+    for role in ("api", "worker"):
+        pid = state.get(role)
+        if type(pid) is not int:
+            continue
+        if recorded_process_exited(state, role):
+            continue
+        birth = process_birth(pid)
+        expected = state.get("births", {}).get(role)
+        if birth is not None and expected is not None and birth != tuple(expected):
+            continue
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            continue
+        return True
+    return False
+
+
 def start(port, offline):
+    from incident_desk.process_probe import owns_health_listener
+
     current = status()
+    if unresolved_start(current):
+        raise RuntimeError("Previous startup is unresolved; inspect it before starting another")
     if current["api_running"] or current["worker_running"]:
         raise RuntimeError("Service already partially/fully running; use status or restart")
     LOCAL.mkdir(exist_ok=True, mode=0o700)
@@ -133,35 +188,72 @@ def start(port, offline):
         "url": f"http://127.0.0.1:{port}",
     }
     write_private(SERVICE_SETTINGS, state)
-    for role in ("api", "worker"):
-        command = [str(PYTHON), "-m", "incident_desk", "--local-dir", str(LOCAL), role]
-        if role == "api":
-            command += ["--port", str(port)]
-        elif offline:
-            command += ["--offline"]
-        with (LOCAL / f"{role}.log").open("a") as log:
-            os.fchmod(log.fileno(), 0o600)
-            process = subprocess.Popen(
-                command, cwd=LOCAL, stdout=log, stderr=log, start_new_session=True
-            )
-        state[role] = process.pid
-        state.setdefault("identities", {})[role] = process_identity(process.pid)
-        write_private(STATE, state)
-    for _ in range(50):
-        if not all(alive(state[role], role) for role in ("api", "worker")):
-            stop()
-            raise RuntimeError("A process exited; inspect .local/api.log and .local/worker.log")
-        try:
-            with urllib.request.urlopen(state["url"] + "/health", timeout=1) as response:
-                if response.status == 200 and response.headers.get("X-IncidentDesk-PID") == str(
-                    state["api"]
-                ):
+    state["phase"] = "STARTING"
+    children, births = {}, {}
+    try:
+        for role in ("api", "worker"):
+            command = [str(PYTHON), "-m", "incident_desk", "--local-dir", str(LOCAL), role]
+            if role == "api":
+                command += ["--port", str(port)]
+            elif offline:
+                command += ["--offline"]
+            with (LOCAL / f"{role}.log").open("a") as log:
+                os.fchmod(log.fileno(), 0o600)
+                process = Popen(command, cwd=LOCAL, stdout=log, stderr=log, start_new_session=True)
+            children[role] = process
+            births[role] = process_birth(process.pid)
+            state[role] = process.pid
+            state["births"] = births
+            write_private(STATE, state)
+            if births[role] is None:
+                raise RuntimeError("Cannot prove the newly spawned child's birth identity")
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            current = {
+                role: owned_child_identity(child, births[role], process_identity)
+                for role, child in children.items()
+            }
+            if not all(current.values()):
+                raise RuntimeError("A child exited; inspect local api.log and worker.log")
+            ready = False
+            try:
+                with urllib.request.urlopen(state["url"] + "/health", timeout=1) as response:
+                    body = response.read(65537)
+                    if len(body) <= 65536:
+                        worker = json.loads(body).get("worker", {})
+                        ready = (
+                            response.status == 200
+                            and response.headers.get("X-IncidentDesk-PID") == str(state["api"])
+                            and worker.get("pid") == state["worker"]
+                            and worker.get("status") == "ready"
+                        )
+            except (OSError, ValueError):
+                pass
+            if ready and asyncio.run(owns_health_listener(state["api"], state["url"] + "/health")):
+                settled = {
+                    role: owned_child_identity(child, births[role], process_identity)
+                    for role, child in children.items()
+                }
+                if settled == current:
+                    state["identities"] = settled
+                    state["births"] = births
+                    state["phase"] = "READY"
+                    write_private(STATE, state)
                     return status()
-        except OSError:
-            pass
-        time.sleep(0.1)
-    stop()
-    raise RuntimeError("API health timeout; inspect local logs")
+            time.sleep(0.1)
+        raise RuntimeError("Owned API/worker readiness timeout; inspect local logs")
+    except BaseException:
+        # A failed new launch must not call generic stop() on saved/stale PIDs.
+        for role, child in reversed(list(children.items())):
+            birth = births.get(role) or process_birth(child.pid)
+            terminate_owned_child(child, birth, process_identity)
+        actual = saved()
+        if children and all(
+            child.poll() is not None and actual.get(role) == child.pid
+            for role, child in children.items()
+        ):
+            STATE.unlink(missing_ok=True)
+        raise
 
 
 def port_number(value):

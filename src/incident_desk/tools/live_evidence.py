@@ -14,6 +14,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
+from incident_desk.process_identity import process_birth
 from incident_desk.projects import ProjectProfile, project_path, secret_path
 from incident_desk.settings import Settings
 
@@ -442,7 +443,14 @@ class LiveEvidence:
             _, command = await self._command("ps", "-p", str(pid), "-o", "command=")
             _, detail = await self._command("ps", "-p", str(pid), "-o", "pid=,lstart=,comm=,args=")
             managed = bool(
-                state and pid == managed_pid and state.get("identity") == process_identity.strip()
+                state
+                and state.get("phase") != "STARTING"
+                and pid == managed_pid
+                and state.get("identity") == process_identity.strip()
+                and (
+                    "birth" not in state
+                    or await asyncio.to_thread(process_birth, pid) == tuple(state["birth"])
+                )
             )
             argv_matches = command.strip() in expected_commands
             listener = (

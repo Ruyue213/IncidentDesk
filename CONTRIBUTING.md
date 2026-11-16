@@ -18,7 +18,7 @@ npm test --prefix frontend
 uv run --frozen --extra rag pytest -q
 uv build --out-dir dist
 uv export --frozen --all-extras --no-dev --no-emit-project --no-hashes --output-file dist/incidentdesk-constraints.txt
-python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
+uv run --frozen --extra rag python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
 ```
 
 The optional `rag` dependencies enable local embeddings. Keep `--extra rag` on `uv run` when you need them; uv can remove unselected extras. Core tests and CI use injected embeddings and scripted models without downloading weights or calling a paid provider. Actual embedding experiments require an explicitly downloaded fixed model; report model revision, corpus, queries, ranking settings, and results.
@@ -29,7 +29,7 @@ Tests should verify behavior that can fail independently of the implementation: 
 
 Describe the concrete trigger, previous behavior, resulting behavior, and the checks you ran. Include a minimal synthetic case and expected result when changing diagnosis, retrieval, or recovery. Report retrieval quality separately from end-to-end diagnosis quality; scripted model success is a reliability check, not a model accuracy measurement.
 
-New model adapters need a full tool-call/return round trip, reasoning-field handling, bounded requests, usage/error handling, and cost reservation checks. Real paid tests must be explicit and use a separate budget; never put provider credentials into CI.
+New model adapters need a full tool-call/return round trip, reasoning-field handling, bounded requests, usage/error handling, and cost reservation checks. Real paid tests must be explicit, have a task cap, and remain within the same cumulative spending ledger; never put provider credentials into CI.
 
 Do not submit `.env`, API keys, state databases, model weights, real logs, private prompts/replies, backups, personal project paths, or third-party project source without authorization. Issues, screenshots, recordings, and build artifacts have the same requirement. Prefer synthetic data; automatic redaction cannot identify every private business value. Follow [SECURITY.md](SECURITY.md) for vulnerabilities.
 

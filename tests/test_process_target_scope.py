@@ -5,6 +5,7 @@ import json
 import shutil
 import subprocess
 import sys
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -38,19 +39,26 @@ server.serve_forever()
         for index in range(2):
             ready = tmp_path / f"ready-{index}"
             command = [sys.executable, str(script), str(ready)]
-            process = await asyncio.to_thread(
-                subprocess.Popen,
-                command,
-                cwd=tmp_path,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
+            diagnostics = tmp_path / f"listener-{index}.log"
+            with diagnostics.open("wb") as log:
+                process = await asyncio.to_thread(
+                    subprocess.Popen,
+                    command,
+                    cwd=tmp_path,
+                    stdout=subprocess.DEVNULL,
+                    stderr=log,
+                )
             children.append(process)
-            for _ in range(100):
+            deadline = time.monotonic() + 10
+            while time.monotonic() < deadline:
                 if ready.exists() and ready.read_text():
                     break
+                assert process.poll() is None, diagnostics.read_text()[-4000:]
                 await asyncio.sleep(0.02)
-            assert ready.exists() and ready.read_text()
+            assert ready.exists() and ready.read_text(), (
+                f"Listener did not become ready; exit={process.poll()}; "
+                + diagnostics.read_text()[-4000:]
+            )
         target, other = children
         url = f"http://127.0.0.1:{(tmp_path / 'ready-0').read_text()}/healthz"
         project = ProjectProfile(

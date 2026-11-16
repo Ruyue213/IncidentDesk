@@ -10,9 +10,18 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
+from subprocess import Popen
 
 import httpx
 
+from incident_desk.process_identity import (
+    finish_cleanup,
+    owned_child_identity,
+    process_birth,
+    process_exists,
+    process_has_exited,
+    terminate_owned_child,
+)
 from incident_desk.projects import ProjectStore, safe_project_path
 from incident_desk.schemas import ServiceActionRequest
 from incident_desk.storage.repository import Conflict
@@ -92,11 +101,26 @@ class ActionExecutor:
         state = json.loads(path.read_text()) if path.exists() else None
         if not state:
             return None
+        if state.get("phase") == "STARTING":
+            if process_has_exited(state["pid"], tuple(state["birth"])):
+                return None
+            birth = process_birth(state["pid"])
+            if birth is not None and birth != tuple(state["birth"]):
+                return None  # Original child is gone; never adopt or signal its successor.
+            try:
+                os.kill(state["pid"], 0)
+            except ProcessLookupError:
+                return None
+            raise Conflict("Previous service startup is unresolved; inspect it before a new action")
         current = identity(state["pid"])
         if current is None:
-            return None
+            if process_exists(state["pid"]) is False:
+                return None
+            raise Conflict("Saved process cannot be verified; refusing a new action")
         if current != state["identity"]:
             raise Conflict("Saved process identity changed; refusing to signal this PID")
+        if "birth" in state and process_birth(state["pid"]) != tuple(state["birth"]):
+            raise Conflict("Saved process birth changed; refusing to signal this PID")
         return state
 
     def preview(self, run_request, params):
@@ -176,6 +200,113 @@ class ActionExecutor:
         except httpx.HTTPError:
             return {"status": "UNREACHABLE"}
 
+    async def start_service(self, project, command, operation_id):
+        """Freeze ownership after readiness, allowing only this child's bootstrap exec."""
+        from incident_desk.process_probe import owns_health_listener
+
+        directory = self.state_path(project).parent
+        directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+        env = {
+            key: os.environ[key]
+            for key in ("PATH", "HOME", "LANG", "LC_ALL", "TMPDIR")
+            if key in os.environ
+        }
+        env["TZ"] = project.timezone
+        log = (directory / "service.log").open("ab")
+        os.fchmod(log.fileno(), 0o600)
+        process, spawn_task = None, None
+        birth = None
+        try:
+            # Retain a task as well as the eventual Popen handle. Cancellation
+            # before the thread returns must not lose the newly created child.
+            spawn_task = asyncio.create_task(
+                asyncio.to_thread(
+                    Popen,
+                    command,
+                    cwd=project.root,
+                    env=env,
+                    stdin=subprocess.DEVNULL,
+                    stdout=log,
+                    stderr=log,
+                    start_new_session=True,
+                )
+            )
+            process = await asyncio.shield(spawn_task)
+            birth = await asyncio.to_thread(process_birth, process.pid)
+            if birth is None:
+                raise RuntimeError("Registered service exited at startup")
+            initial = await asyncio.to_thread(owned_child_identity, process, birth, identity)
+            atomic_write(
+                self.state_path(project),
+                json.dumps(
+                    {
+                        "phase": "STARTING",
+                        "pid": process.pid,
+                        "birth": birth,
+                        "identity": initial,
+                        "operation_id": operation_id,
+                        "project_version": project.version,
+                    }
+                ).encode(),
+            )
+            deadline = time.monotonic() + 15
+            stable_identity, stable_since = None, time.monotonic()
+            while time.monotonic() < deadline:
+                current = await asyncio.to_thread(owned_child_identity, process, birth, identity)
+                if current is None:
+                    raise RuntimeError("Registered child exited or its birth identity changed")
+                if current != stable_identity:
+                    stable_identity, stable_since = current, time.monotonic()
+                after_health = await self.health(project)
+                listener_verified = after_health[
+                    "status"
+                ] == "HEALTHY" and await owns_health_listener(process.pid, project.health_url)
+                if (after_health["status"] == "HEALTHY" and listener_verified) or (
+                    after_health["status"] == "NOT_CONFIGURED"
+                    and time.monotonic() - stable_since >= 0.2
+                ):
+                    settled = await asyncio.to_thread(
+                        owned_child_identity, process, birth, identity
+                    )
+                    if settled is not None and settled == current:
+                        # Listener lookup and complete identity must describe the
+                        # same child; exec after this point fails closed as usual.
+                        atomic_write(
+                            self.state_path(project),
+                            json.dumps(
+                                {
+                                    "phase": "READY",
+                                    "pid": process.pid,
+                                    "identity": settled,
+                                    "birth": birth,
+                                    "operation_id": operation_id,
+                                    "project_version": project.version,
+                                }
+                            ).encode(),
+                        )
+                        return process.pid, after_health, listener_verified
+                await asyncio.sleep(0.1)
+            raise RuntimeError("Registered service did not establish owned readiness")
+        except BaseException:
+            if process is None and spawn_task is not None:
+                try:
+                    process = await finish_cleanup(spawn_task)
+                except Exception:
+                    pass  # Popen itself failed: no live handle was produced.
+            if process is not None:
+                if birth is None:
+                    birth = await finish_cleanup(
+                        asyncio.create_task(asyncio.to_thread(process_birth, process.pid))
+                    )
+                await finish_cleanup(
+                    asyncio.create_task(
+                        asyncio.to_thread(terminate_owned_child, process, birth, identity)
+                    )
+                )
+            raise
+        finally:
+            log.close()
+
     async def execute(self, run_request, run_id, params):
         operation, receipt, claimed = await self.repository.begin_service_action(run_id, params)
         if not claimed:
@@ -242,26 +373,44 @@ class ActionExecutor:
             else:
                 before = preview["before_process"]
                 if before:
-                    if identity(before["pid"]) != before["identity"]:
+                    if identity(before["pid"]) != before["identity"] or (
+                        "birth" in before and process_birth(before["pid"]) != tuple(before["birth"])
+                    ):
                         raise Conflict("Managed process identity changed before termination")
                     effect_started = True
                     os.kill(before["pid"], signal.SIGTERM)
                     deadline = time.monotonic() + 10
-                    while identity(before["pid"]) == before["identity"]:
+                    while True:
+                        if process_has_exited(
+                            before["pid"], tuple(before["birth"]) if "birth" in before else None
+                        ):
+                            break
+                        current = identity(before["pid"])
+                        if "birth" in before:
+                            birth = process_birth(before["pid"])
+                            if birth is not None and birth != tuple(before["birth"]):
+                                break
+                            if birth is None and process_exists(before["pid"]) is False:
+                                break
+                            if birth is None:
+                                raise Conflict("Stopping process birth cannot be verified")
+                        elif current is None and process_exists(before["pid"]) is False:
+                            break
+                        if current != before["identity"]:
+                            if process_has_exited(
+                                before["pid"], tuple(before["birth"]) if "birth" in before else None
+                            ):
+                                break
+                            raise Conflict(
+                                "Managed service changed identity while stopping; "
+                                "no replacement was started"
+                            )
                         if time.monotonic() >= deadline:
                             raise RuntimeError(
                                 "Managed process did not stop gracefully; "
                                 "no replacement was started"
                             )
                         await asyncio.sleep(0.1)
-                directory = self.state_path(project).parent
-                directory.mkdir(parents=True, exist_ok=True, mode=0o700)
-                env = {
-                    key: os.environ[key]
-                    for key in ("PATH", "HOME", "LANG", "LC_ALL", "TMPDIR")
-                    if key in os.environ
-                }
-                env["TZ"] = project.timezone
                 executable = Path(preview["command"][0])
                 if (
                     await asyncio.to_thread(executable_hash, executable)
@@ -273,47 +422,13 @@ class ActionExecutor:
                         "A remaining process still answers; replacement was not launched"
                     )
                 await boundary()
-                with (directory / "service.log").open("ab") as log:
-                    effect_started = True
-                    process = await asyncio.create_subprocess_exec(
-                        *preview["command"],
-                        cwd=project.root,
-                        env=env,
-                        stdin=subprocess.DEVNULL,
-                        stdout=log,
-                        stderr=log,
-                        start_new_session=True,
-                    )
-                started = identity(process.pid)
-                if not started:
-                    raise RuntimeError("Registered service exited at startup")
-                atomic_write(
-                    self.state_path(project),
-                    json.dumps(
-                        {
-                            "pid": process.pid,
-                            "identity": started,
-                            "operation_id": operation["id"],
-                            "project_version": project.version,
-                        }
-                    ).encode(),
-                )
-                after_health = {"status": "NOT_CONFIGURED"}
-                for _ in range(40):
-                    if process.returncode is not None:
-                        raise RuntimeError("Registered service exited during health verification")
-                    after_health = await self.health(project)
-                    if after_health["status"] in {"HEALTHY", "NOT_CONFIGURED"}:
-                        break
-                    await asyncio.sleep(0.25)
-                from incident_desk.process_probe import owns_health_listener
-
-                listener_verified = bool(project.health_url) and await owns_health_listener(
-                    process.pid, project.health_url
+                effect_started = True
+                pid, after_health, listener_verified = await self.start_service(
+                    project, preview["command"], operation["id"]
                 )
                 result = {
                     "action": proposal.action,
-                    "pid": process.pid,
+                    "pid": pid,
                     "health_before": before_health,
                     "health_after": after_health,
                     "listener_verified": listener_verified,
