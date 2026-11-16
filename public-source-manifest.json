@@ -134,7 +134,7 @@
     "frontend/tsconfig.json": "69cbdc46f7e710f5553a197ec95dd0ac4a04fc8f846424b6991fca7bd79c7cdf",
     "frontend/vite.config.ts": "7ac9fc3ffc1495fd6d3f484fab50645c1eaa9617bb924830c4c3a20634343662",
     "hatch_build.py": "4a38fa3d42f4a59e3c2bf7e81d32b07e893dc2ced006d216c33a37dff03c4ea1",
-    "pyproject.toml": "8965a09feab0d737c80bde38cc178e10e95faa968285324387e86b0ab85a392b",
+    "pyproject.toml": "a5302768ad4b845fda3a0506256532f1e51f8eb2c80304f172b4c410a9f42d31",
     "scripts/backup_state.py": "56333b290b2ea4b21d183dd3821936c93af8c40151f8d4c711f08cde0b96c9ab",
     "scripts/browser_check.mjs": "2b9aa1fc3ce6fbf48130f2a7023add87cc02e8d52b2f9e81dd4d4882e224c45e",
     "scripts/check_environment.py": "05ac301d9663ceed9aebecb6aef51908c875f4553dd5ef1e21225c84ae5d27c4",
