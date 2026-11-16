@@ -113,7 +113,7 @@
     "evals/retrieval/regression-v0.3-holdout.json": "a687822b39b680faf234d4f7b914883f45a5c74780ba49275cdd9d0291b2209c",
     "evals/rubric.json": "47b5e8eaa2f633222b71d58e1e3cdd918e06852448e53c6d07d3f074ad091460",
     "frontend/index.html": "bfd7995b0be67e0d0ec5ba93663c11321d0fa22e40c344a69ce35ac9e7d9bb47",
-    "frontend/package-lock.json": "748c8a56bdb31691a1f97e0574a4cf36716365c26f76a348f954df4f1aca6aab",
+    "frontend/package-lock.json": "72e98e2e65130886bec22634c7e009c03ccc8e62524d2d582b31e70dfe466bf5",
     "frontend/package.json": "7864dfa09ba56d8d54c11d5a3e12830ff81a91d81296faac0df9f5ecf8cb2851",
     "frontend/public/favicon.svg": "f58e2c2811b4abd002af15a23dea506e30091cc3773bd8fd5fb022e84b1b6b6c",
     "frontend/src/App.module.css": "31a7906a4111f75a37e715938958dc2e7adf8fc3896cd6d9d040396d7be3bbde",
