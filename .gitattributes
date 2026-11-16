@@ -1,0 +1,2 @@
+# Unified patch context uses a single space on otherwise empty lines.
+integrations/socialengine/loopback-bind.patch -whitespace

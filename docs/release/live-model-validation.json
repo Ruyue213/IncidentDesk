@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "scope": "Single real-service read-only cloud-agent integration smoke; not diagnosis accuracy or remediation validation",
+  "model_returned_ids": [
+    "deepseek-flash"
+  ],
+  "outcome": "SUCCEEDED",
+  "model_calls": 6,
+  "tool_calls": 12,
+  "report_repairs": 0,
+  "validated_quote_references": 6,
+  "unique_referenced_snapshots": 6,
+  "required_tools_observed": [
+    "search_knowledge",
+    "get_metric_history",
+    "run_business_probe"
+  ],
+  "service_actions_proposed": false,
+  "known_estimated_cost_cny": 0.06008352,
+  "private_result_sha256": "165f6d6339ea7e3b8b2bbcb7ec1799a6394769e3f40b8b591b39b68f67ed228b",
+  "private_data_distributed": false,
+  "limitations": [
+    "One availability smoke, no representative labeled incident set",
+    "Historical coverage was incomplete and the report acknowledged the missing baseline",
+    "Retrieved runbooks are guidance, not runtime facts",
+    "No private source, logs, run identifier, process identifier, paths or source quotes are published"
+  ]
+}

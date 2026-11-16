@@ -1,0 +1,32 @@
+{
+  "incident_id": "acc-005",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-19T08:00:00+00:00",
+    "end": "2026-10-19T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-005-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-19T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "错误率8%，连接池活跃40/40、等待队列45；缺少数据库查询耗时和连接持有时间指标。"
+    },
+    {
+      "evidence_id": "acc-005-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-19T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "失败请求出现DBConnectionAcquireTimeout；日志能确认等待连接，但不能说明连接被占用原因。"
+    },
+    {
+      "evidence_id": "acc-005-l-02",
+      "source": "logs",
+      "observed_at": "2026-10-19T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "导出说明：此incident没有接入变更源；changes查询为空是采集缺失，不是已经确认没有配置变更。"
+    }
+  ]
+}

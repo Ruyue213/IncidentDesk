@@ -1,0 +1,46 @@
+{
+  "incident_id": "acc-001",
+  "incident_group": "canary-instance-a",
+  "synthetic": true,
+  "fault_family": "connection_pool",
+  "expected_behavior": "supported",
+  "expected_evidence_ids": [
+    "acc-001-m-01",
+    "acc-001-m-02",
+    "acc-001-l-01",
+    "acc-001-c-01"
+  ],
+  "supporting_evidence_ids": [
+    "acc-001-m-01",
+    "acc-001-m-02",
+    "acc-001-l-01",
+    "acc-001-c-01"
+  ],
+  "contradicting_evidence_ids": [],
+  "expected_doc_ids": [
+    "kb-002",
+    "kb-007"
+  ],
+  "missing_information": [
+    "实例a连接持有时间及灰度配置来源"
+  ],
+  "acceptable_conclusions": [
+    "实例级有效连接池配置差异最支持a连接获取受限；不可把全服务所有实例都写成同等故障。"
+  ],
+  "recommended_checks": [
+    "核对实例a灰度配置与连接持有",
+    "按实例对比相同请求路径"
+  ],
+  "must_express_uncertainty": false,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

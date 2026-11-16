@@ -1,0 +1,46 @@
+{
+  "incident_id": "acc-003",
+  "incident_group": "shared-credential-c",
+  "synthetic": true,
+  "fault_family": "dependency_rate_limit",
+  "expected_behavior": "supported",
+  "expected_evidence_ids": [
+    "acc-003-m-01",
+    "acc-003-m-02",
+    "acc-003-l-01",
+    "acc-003-c-01"
+  ],
+  "supporting_evidence_ids": [
+    "acc-003-m-01",
+    "acc-003-m-02",
+    "acc-003-l-01",
+    "acc-003-c-01"
+  ],
+  "contradicting_evidence_ids": [],
+  "expected_doc_ids": [
+    "kb-004",
+    "kb-001"
+  ],
+  "missing_information": [
+    "供应商对共享凭据的精确限流桶规则"
+  ],
+  "acceptable_conclusions": [
+    "共享凭据总用量超配额最支持依赖限流；不应归因于checkout-api自身业务流量突增或重试配置变化。"
+  ],
+  "recommended_checks": [
+    "核对共享凭据调用方与限流桶",
+    "核对Retry-After"
+  ],
+  "must_express_uncertainty": false,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

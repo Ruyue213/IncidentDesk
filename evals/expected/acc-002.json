@@ -1,0 +1,46 @@
+{
+  "incident_id": "acc-002",
+  "incident_group": "path-specific-latency-b",
+  "synthetic": true,
+  "fault_family": "downstream_latency",
+  "expected_behavior": "supported",
+  "expected_evidence_ids": [
+    "acc-002-m-01",
+    "acc-002-m-02",
+    "acc-002-l-01",
+    "acc-002-c-01"
+  ],
+  "supporting_evidence_ids": [
+    "acc-002-m-01",
+    "acc-002-m-02",
+    "acc-002-l-01",
+    "acc-002-c-01"
+  ],
+  "contradicting_evidence_ids": [],
+  "expected_doc_ids": [
+    "kb-003",
+    "kb-007"
+  ],
+  "missing_information": [
+    "inventory-api /reserve内部处理与队列证据"
+  ],
+  "acceptable_conclusions": [
+    "业务路径的下游延迟证据成立，健康页正常不能推翻；内部变更是否为触发原因仍待核对。"
+  ],
+  "recommended_checks": [
+    "检查reserve路径依赖端耗时",
+    "对比health与业务路径观测范围"
+  ],
+  "must_express_uncertainty": false,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

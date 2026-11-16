@@ -1,0 +1,80 @@
+name: Engineering and distribution checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Python 3.12 / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    env:
+      DEEPSEEK_API_KEY: ""
+      LANGSMITH_TRACING: "false"
+      LANGCHAIN_TRACING_V2: "false"
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked core and test dependencies
+        run: uv sync --frozen --group dev
+      - name: Install locked frontend dependencies
+        run: npm ci --prefix frontend
+      - name: Lint and formatting
+        run: |
+          uv run --frozen ruff check .
+          uv run --frozen ruff format --check .
+      - name: Build frontend
+        run: npm run build --prefix frontend
+      - name: Frontend state tests
+        run: npm test --prefix frontend
+      - name: Install isolated UI browser
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Interactive settings, approvals, and evidence UI
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: frontend
+        shell: bash
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 5174 --strictPort > "$RUNNER_TEMP/incidentdesk-vite.log" 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..45}; do
+            if curl --silent --fail http://127.0.0.1:5174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node --test src/ui.test.mjs
+      - name: Backend, safety, recovery, and synthetic retrieval tests
+        run: uv run --frozen pytest -q
+      - name: Build sdist and wheel from curated resources
+        run: uv build --out-dir dist
+      - name: Export locked core dependency constraints
+        run: uv export --frozen --all-extras --no-dev --no-emit-project --no-hashes --output-file dist/incidentdesk-constraints.txt
+      - name: Install and run wheel outside the checkout
+        run: python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
+      - name: Preserve checked distribution artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: incidentdesk-distributions
+          path: dist/*
+          if-no-files-found: error

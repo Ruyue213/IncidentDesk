@@ -1,0 +1,25 @@
+{
+  "incident_id": "dev-005",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-05T08:00:00+00:00",
+    "end": "2026-10-05T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "dev-005-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-05T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "监控记录08:05Z错误率由0.5%升至8%，端到端p95由210ms升至1.5s。"
+    },
+    {
+      "evidence_id": "dev-005-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-05T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "采集说明：此incident未导出数据库/连接池/依赖子指标，日志与变更数据导出失败。"
+    }
+  ]
+}

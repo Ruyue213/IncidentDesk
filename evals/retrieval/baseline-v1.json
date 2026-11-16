@@ -1,0 +1,551 @@
+{
+  "schema": 1,
+  "description": "First frozen synthetic v1 local E5 baseline, collected before holdout-driven tuning",
+  "dataset_sha256": "fc682e8ea13bf4acc9b815daee958aa06cd4ff7785783b5417576eca0c8c097b",
+  "model": {
+    "state": "ready",
+    "model_id": "intfloat/multilingual-e5-small",
+    "revision": "fd1525a9fd15316a2d503bf26ab031a61d056e98",
+    "dimensions": 384,
+    "fingerprint": "intfloat/multilingual-e5-small@fd1525a9fd15316a2d503bf26ab031a61d056e98:384:l2:query-passage-v1",
+    "local_only": true,
+    "max_tokens": 512,
+    "download_required": false
+  },
+  "protocol": {
+    "chunker": "heading-lines-320-v1",
+    "chunk_chars": 320,
+    "lexical": "generation-scoped-bm25-jieba-v1",
+    "dense": "exact normalized cosine",
+    "rrf_k": 60,
+    "fusion_candidates_per_channel": 50,
+    "top_k_chunk_slots": 5,
+    "document_diversity_first_pass": 2,
+    "failed_or_degraded_queries_count_as_zero": true,
+    "public_synthetic_only": true,
+    "cloud_model_calls": 0
+  },
+  "runs": {
+    "development": {
+      "evaluated_at": "2026-11-16T07:31:04.266567+00:00",
+      "split_sha256": "33eeffaeade28a6dc202322b61aa3b4fd7287a3956ef2161254f124a3703939c",
+      "code": {
+        "git_commit": "4ede5de3cd6d654d836f684d87d7a5fef074b410",
+        "file_sha256": {
+          "src/incident_desk/knowledge/project_store.py": "fb3cf047f96839f02dcf1d56498aa75c24ff5f0ed5cfea3ebfd91097978a4bda",
+          "src/incident_desk/knowledge/embeddings.py": "237782191b7e0f8ad3f869faf163e9b54d41df1dd7898caa41d36c1f213f1873",
+          "src/incident_desk/knowledge/store.py": "f0601b0aaad036055a74166985c1e2a8438a9377934d9cd1faa6fcb706f25ecc",
+          "scripts/evaluate_retrieval.py": "35adccb4e6220d7517cedcb2b172e9367147e1edde50f93ebbc17e17f8de3ed2",
+          "uv.lock": "daa34f406025d2095c0a30f31365ee717a7e7427736df1a84738d330f5c1155e"
+        }
+      },
+      "environment": {
+        "sentence-transformers": "5.7.0",
+        "torch": "2.15.0",
+        "transformers": "5.23.0",
+        "huggingface-hub": "2.4.0",
+        "jieba": "0.42.1"
+      },
+      "model_warmup_ms": 20726.272,
+      "index": {
+        "project_id": "retrieval-benchmark-v1",
+        "generation": "17d47c06fb675d90baeb0dbbafc33ec3f670cd3bcf4c2ffc169260a6923a662a",
+        "documents": 12,
+        "chunks": 67,
+        "unchanged": false,
+        "embedding": {
+          "fingerprint": "intfloat/multilingual-e5-small@fd1525a9fd15316a2d503bf26ab031a61d056e98:384:l2:query-passage-v1",
+          "indexed": true,
+          "state": "ready"
+        },
+        "embedding_cache_hits": 0,
+        "embedded_chunks": 67,
+        "latency_ms": 428.47
+      },
+      "summary": {
+        "lexical": {
+          "queries": 12,
+          "successful_queries": 12,
+          "failed_or_degraded_queries": 0,
+          "metrics": {
+            "recall@1": 0.666667,
+            "recall@3": 0.666667,
+            "recall@5": 0.666667,
+            "mrr@5": 0.666667,
+            "ndcg@5": 0.666667
+          },
+          "latency_ms": {
+            "p50": 0.894,
+            "p95": 1.079,
+            "max": 1.079
+          }
+        },
+        "dense": {
+          "queries": 12,
+          "successful_queries": 12,
+          "failed_or_degraded_queries": 0,
+          "metrics": {
+            "recall@1": 0.666667,
+            "recall@3": 0.75,
+            "recall@5": 1.0,
+            "mrr@5": 0.758333,
+            "ndcg@5": 0.815957
+          },
+          "latency_ms": {
+            "p50": 10.377,
+            "p95": 13.369,
+            "max": 13.369
+          }
+        },
+        "hybrid": {
+          "queries": 12,
+          "successful_queries": 12,
+          "failed_or_degraded_queries": 0,
+          "metrics": {
+            "recall@1": 0.666667,
+            "recall@3": 0.75,
+            "recall@5": 1.0,
+            "mrr@5": 0.758333,
+            "ndcg@5": 0.815957
+          },
+          "latency_ms": {
+            "p50": 10.119,
+            "p95": 11.873,
+            "max": 11.873
+          }
+        }
+      },
+      "by_query_kind": {
+        "chinese_paraphrase": {
+          "lexical": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 0.0,
+              "recall@3": 0.0,
+              "recall@5": 0.0,
+              "mrr@5": 0.0,
+              "ndcg@5": 0.0
+            },
+            "latency_ms": {
+              "p50": 0.857,
+              "p95": 0.893,
+              "max": 0.893
+            }
+          },
+          "dense": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 0.0,
+              "recall@3": 0.25,
+              "recall@5": 1.0,
+              "mrr@5": 0.275,
+              "ndcg@5": 0.447872
+            },
+            "latency_ms": {
+              "p50": 12.845,
+              "p95": 13.369,
+              "max": 13.369
+            }
+          },
+          "hybrid": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 0.0,
+              "recall@3": 0.25,
+              "recall@5": 1.0,
+              "mrr@5": 0.275,
+              "ndcg@5": 0.447872
+            },
+            "latency_ms": {
+              "p50": 11.087,
+              "p95": 11.873,
+              "max": 11.873
+            }
+          }
+        },
+        "english_paraphrase": {
+          "lexical": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 0.929,
+              "p95": 1.079,
+              "max": 1.079
+            }
+          },
+          "dense": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 10.377,
+              "p95": 10.655,
+              "max": 10.655
+            }
+          },
+          "hybrid": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 9.992,
+              "p95": 10.28,
+              "max": 10.28
+            }
+          }
+        },
+        "exact_identifier": {
+          "lexical": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 0.924,
+              "p95": 1.016,
+              "max": 1.016
+            }
+          },
+          "dense": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 10.247,
+              "p95": 10.268,
+              "max": 10.268
+            }
+          },
+          "hybrid": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 9.884,
+              "p95": 10.184,
+              "max": 10.184
+            }
+          }
+        }
+      },
+      "limitations": [
+        "Small synthetic corpus; not a production query distribution or diagnosis benchmark",
+        "Chinese paraphrases intentionally test cross-language English-document retrieval",
+        "Public holdout supports regression checks but cannot guarantee future model isolation"
+      ]
+    },
+    "holdout": {
+      "evaluated_at": "2026-11-16T07:31:41.266729+00:00",
+      "split_sha256": "62b45cabdae124a7c49bb5d62b7ddd26df4b930c575b7dab6af2c76712094797",
+      "code": {
+        "git_commit": "4ede5de3cd6d654d836f684d87d7a5fef074b410",
+        "file_sha256": {
+          "src/incident_desk/knowledge/project_store.py": "fb3cf047f96839f02dcf1d56498aa75c24ff5f0ed5cfea3ebfd91097978a4bda",
+          "src/incident_desk/knowledge/embeddings.py": "237782191b7e0f8ad3f869faf163e9b54d41df1dd7898caa41d36c1f213f1873",
+          "src/incident_desk/knowledge/store.py": "f0601b0aaad036055a74166985c1e2a8438a9377934d9cd1faa6fcb706f25ecc",
+          "scripts/evaluate_retrieval.py": "35adccb4e6220d7517cedcb2b172e9367147e1edde50f93ebbc17e17f8de3ed2",
+          "uv.lock": "e02dcf0d5dab7b6e1d32476739499cc57d2a5c72b76215fb83f0bb5984ce5ff8"
+        }
+      },
+      "environment": {
+        "sentence-transformers": "5.7.0",
+        "torch": "2.15.0",
+        "transformers": "5.23.0",
+        "huggingface-hub": "2.4.0",
+        "jieba": "0.42.1"
+      },
+      "model_warmup_ms": 2722.556,
+      "index": {
+        "project_id": "retrieval-benchmark-v1",
+        "generation": "17d47c06fb675d90baeb0dbbafc33ec3f670cd3bcf4c2ffc169260a6923a662a",
+        "documents": 12,
+        "chunks": 67,
+        "unchanged": false,
+        "embedding": {
+          "fingerprint": "intfloat/multilingual-e5-small@fd1525a9fd15316a2d503bf26ab031a61d056e98:384:l2:query-passage-v1",
+          "indexed": true,
+          "state": "ready"
+        },
+        "embedding_cache_hits": 0,
+        "embedded_chunks": 67,
+        "latency_ms": 381.69
+      },
+      "summary": {
+        "lexical": {
+          "queries": 12,
+          "successful_queries": 12,
+          "failed_or_degraded_queries": 0,
+          "metrics": {
+            "recall@1": 0.666667,
+            "recall@3": 0.666667,
+            "recall@5": 0.666667,
+            "mrr@5": 0.666667,
+            "ndcg@5": 0.666667
+          },
+          "latency_ms": {
+            "p50": 0.941,
+            "p95": 1.116,
+            "max": 1.116
+          }
+        },
+        "dense": {
+          "queries": 12,
+          "successful_queries": 12,
+          "failed_or_degraded_queries": 0,
+          "metrics": {
+            "recall@1": 0.75,
+            "recall@3": 0.916667,
+            "recall@5": 0.916667,
+            "mrr@5": 0.833333,
+            "ndcg@5": 0.855155
+          },
+          "latency_ms": {
+            "p50": 11.034,
+            "p95": 13.252,
+            "max": 13.252
+          }
+        },
+        "hybrid": {
+          "queries": 12,
+          "successful_queries": 12,
+          "failed_or_degraded_queries": 0,
+          "metrics": {
+            "recall@1": 0.833333,
+            "recall@3": 0.916667,
+            "recall@5": 0.916667,
+            "mrr@5": 0.875,
+            "ndcg@5": 0.885911
+          },
+          "latency_ms": {
+            "p50": 10.386,
+            "p95": 11.196,
+            "max": 11.196
+          }
+        }
+      },
+      "by_query_kind": {
+        "chinese_paraphrase": {
+          "lexical": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 0.0,
+              "recall@3": 0.0,
+              "recall@5": 0.0,
+              "mrr@5": 0.0,
+              "ndcg@5": 0.0
+            },
+            "latency_ms": {
+              "p50": 0.885,
+              "p95": 1.044,
+              "max": 1.044
+            }
+          },
+          "dense": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 0.5,
+              "recall@3": 0.75,
+              "recall@5": 0.75,
+              "mrr@5": 0.625,
+              "ndcg@5": 0.657732
+            },
+            "latency_ms": {
+              "p50": 11.905,
+              "p95": 13.252,
+              "max": 13.252
+            }
+          },
+          "hybrid": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 0.5,
+              "recall@3": 0.75,
+              "recall@5": 0.75,
+              "mrr@5": 0.625,
+              "ndcg@5": 0.657732
+            },
+            "latency_ms": {
+              "p50": 10.54,
+              "p95": 11.04,
+              "max": 11.04
+            }
+          }
+        },
+        "english_paraphrase": {
+          "lexical": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 0.969,
+              "p95": 1.048,
+              "max": 1.048
+            }
+          },
+          "dense": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 0.75,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 0.875,
+              "ndcg@5": 0.907732
+            },
+            "latency_ms": {
+              "p50": 11.023,
+              "p95": 11.712,
+              "max": 11.712
+            }
+          },
+          "hybrid": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 10.784,
+              "p95": 11.196,
+              "max": 11.196
+            }
+          }
+        },
+        "exact_identifier": {
+          "lexical": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 0.923,
+              "p95": 1.116,
+              "max": 1.116
+            }
+          },
+          "dense": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 10.452,
+              "p95": 10.78,
+              "max": 10.78
+            }
+          },
+          "hybrid": {
+            "queries": 4,
+            "successful_queries": 4,
+            "failed_or_degraded_queries": 0,
+            "metrics": {
+              "recall@1": 1.0,
+              "recall@3": 1.0,
+              "recall@5": 1.0,
+              "mrr@5": 1.0,
+              "ndcg@5": 1.0
+            },
+            "latency_ms": {
+              "p50": 10.235,
+              "p95": 10.294,
+              "max": 10.294
+            }
+          }
+        }
+      },
+      "limitations": [
+        "Small synthetic corpus; not a production query distribution or diagnosis benchmark",
+        "Chinese paraphrases intentionally test cross-language English-document retrieval",
+        "Public holdout supports regression checks but cannot guarantee future model isolation"
+      ]
+    }
+  },
+  "interpretation": [
+    "No cloud model calls and no degraded or unavailable query modes in either run.",
+    "Holdout hybrid improves recall@5 from 8/12 to 11/12; this is a small synthetic capability result.",
+    "The corpus is English and one third of queries are Chinese paraphrases, intentionally stressing cross-language retrieval.",
+    "One holdout query remains outside the top-five chunk slots. No production diagnosis-accuracy or latency-SLO claim is supported.",
+    "Results and hashes are retained for audit; no hyperparameters or labels were changed after inspecting holdout."
+  ],
+  "implementation_phase": "early implementation before final concurrency/UI fixes",
+  "code_identity_scope": "Recorded Git commits are from private development history and are not resolvable in the clean public repository. Per-file SHA256 values identify the evaluated code; these measurements do not validate final release code."
+}

@@ -1,0 +1,373 @@
+{
+  "schema_version": 1,
+  "validation_kind": "isolated_real_service_component_integration",
+  "target": {
+    "name": "User-supplied compatible SocialEngine executable",
+    "binary_sha256": "3f46669e897a7be11c4143e382143bf39d451bcddc4cc00e40ea3bf2f4782c6f",
+    "distributed_with_repository": false,
+    "runnable_from_public_repository_alone": false,
+    "requirement": "Supply a locally built compatible executable supporting the documented CLI and HTTP contracts."
+  },
+  "scope": {
+    "validated": [
+      "fixed_readonly_business_assertions",
+      "process_target_identity_and_instance_isolation",
+      "version_scoped_retained_observations",
+      "bounded_overload_evidence_and_post_load_business_recovery"
+    ],
+    "not_measured": [
+      "cloud_or_local_llm_diagnosis_quality",
+      "blind_test_accuracy",
+      "production_availability_or_capacity",
+      "remediation_correctness_or_safety",
+      "all_metric_history_semantics"
+    ],
+    "isolation": "Temporary executable copies, loopback-only fresh ports and empty service roots; no existing service or persistence is reused.",
+    "redis": "disabled",
+    "wal": "disabled",
+    "snapshot": "not supplied",
+    "ground_truth": "Scenario definitions and private run results stay outside the service root accessible to diagnostic tools.",
+    "public_artifacts": "This sanitized summary and the harness; no executable, source code, patches, raw logs, process identifiers or local filesystem locations."
+  },
+  "harness": {
+    "script": "scripts/evaluate_live_service.py",
+    "normal_service": {
+      "reactors": 2,
+      "pool": 2,
+      "queue": 64
+    },
+    "overload_service": {
+      "reactors": 2,
+      "pool": 1,
+      "queue": 1
+    },
+    "registered_business_probe": {
+      "method": "POST",
+      "route": "query",
+      "body": {
+        "type": "dist",
+        "a": 1,
+        "b": 1
+      },
+      "expected_json": {
+        "distance": 0
+      }
+    },
+    "intentional_contract_mismatch": {
+      "expected_json": {
+        "distance": 1
+      },
+      "interpretation": "A deliberately inconsistent registered assertion, not evidence of a server implementation defect."
+    },
+    "load_deadline_seconds": 30,
+    "cli_safety_bounds": {
+      "nodes": [
+        100,
+        20000
+      ],
+      "degree": [
+        1,
+        32
+      ],
+      "requests": [
+        16,
+        512
+      ],
+      "concurrency": [
+        1,
+        64
+      ]
+    }
+  },
+  "selection_and_interpretation": [
+    "The exploratory dist(1,2) workload produced no rejection; its overload scenario remains failed.",
+    "The workload was then changed to fixed sd(1), after which two replications used the same binary hash, graph seed and listed load/launch parameters.",
+    "The replications are post-selection reproducibility checks, not a held-out dataset or blind diagnosis accuracy estimate.",
+    "HTTP status totals cover only the finite load requests; monitoring and registered probe traffic are additional.",
+    "The latency values are client-observed finite-run statistics, not server histogram quantiles or a capacity benchmark.",
+    "Scheduler, client and host effects were not controlled; rejection counts and latency can vary between machines or runs.",
+    "The separate real-service plus cloud-model smoke test is not included in this report."
+  ],
+  "cloud_model_api_calls_total": 0,
+  "runs": [
+    {
+      "id": "exploratory-distance",
+      "role": "exploratory_workload",
+      "started_at_utc": "2026-11-16T07:37:13.027513+00:00",
+      "finished_at_utc": "2026-11-16T07:37:15.313134+00:00",
+      "private_results_sha256": "bb75fdad897dc340b44e94135519077dc50218736c3f40619dc23e8b541a7bff",
+      "parameters": {
+        "nodes": 5000,
+        "degree": 8,
+        "seed": 42,
+        "requests": 192,
+        "concurrency": 32
+      },
+      "passed": false,
+      "scenarios": [
+        {
+          "name": "healthy",
+          "passed": true,
+          "checks": {
+            "business_passed": true,
+            "managed_target_running": true,
+            "only_target_pid_attributed": true,
+            "at_least_two_retained_samples": true
+          }
+        },
+        {
+          "name": "health_ok_business_assertion_failed",
+          "passed": true,
+          "checks": {
+            "health_http_200": true,
+            "business_http_200": true,
+            "registered_json_assertion_failed": true,
+            "business_not_accepted": true,
+            "profile_history_isolated": true
+          }
+        },
+        {
+          "name": "stopped_target_with_other_instance_alive",
+          "passed": true,
+          "checks": {
+            "target_not_running": true,
+            "no_pid_attributed_to_stopped_target": true,
+            "sibling_still_business_healthy": true,
+            "sibling_only_other_observed": true,
+            "target_business_unavailable": true
+          }
+        },
+        {
+          "name": "bounded_overload",
+          "passed": false,
+          "checks": {
+            "http_503_observed": false,
+            "exported_503_counter_increased": false,
+            "finite_request_accounting": true,
+            "business_recovers_after_load": true
+          },
+          "load": {
+            "requests": 192,
+            "concurrency": 32,
+            "body": {
+              "type": "dist",
+              "a": 1,
+              "b": 2
+            },
+            "elapsed_seconds": 0.310729499993613,
+            "statuses": {
+              "200": 192
+            },
+            "errors": {},
+            "p95_ms": 140.696
+          },
+          "http_503_counter_delta": 0
+        }
+      ],
+      "cleanup": [
+        {
+          "service": "lab-overload",
+          "exit_code": 0,
+          "stopped": true
+        },
+        {
+          "service": "lab-sibling",
+          "exit_code": 0,
+          "stopped": true
+        },
+        {
+          "service": "lab-target",
+          "exit_code": 0,
+          "stopped": true
+        }
+      ],
+      "cloud_model_api_calls": 0
+    },
+    {
+      "id": "frozen-second-degree-1",
+      "role": "post_selection_replication",
+      "started_at_utc": "2026-11-16T07:40:37.739987+00:00",
+      "finished_at_utc": "2026-11-16T07:40:39.696043+00:00",
+      "private_results_sha256": "a124d746c23939f0cd14435c5c1f2a3327c3ebd4445cacdefdf3b9cadabc6ee9",
+      "parameters": {
+        "nodes": 5000,
+        "degree": 8,
+        "seed": 42,
+        "requests": 192,
+        "concurrency": 32
+      },
+      "passed": true,
+      "scenarios": [
+        {
+          "name": "healthy",
+          "passed": true,
+          "checks": {
+            "business_passed": true,
+            "managed_target_running": true,
+            "only_target_pid_attributed": true,
+            "at_least_two_retained_samples": true
+          }
+        },
+        {
+          "name": "health_ok_business_assertion_failed",
+          "passed": true,
+          "checks": {
+            "health_http_200": true,
+            "business_http_200": true,
+            "registered_json_assertion_failed": true,
+            "business_not_accepted": true,
+            "profile_history_isolated": true
+          }
+        },
+        {
+          "name": "stopped_target_with_other_instance_alive",
+          "passed": true,
+          "checks": {
+            "target_not_running": true,
+            "no_pid_attributed_to_stopped_target": true,
+            "sibling_still_business_healthy": true,
+            "sibling_only_other_observed": true,
+            "target_business_unavailable": true
+          }
+        },
+        {
+          "name": "bounded_overload",
+          "passed": true,
+          "checks": {
+            "http_503_observed": true,
+            "exported_503_counter_increased": true,
+            "finite_request_accounting": true,
+            "business_recovers_after_load": true
+          },
+          "load": {
+            "requests": 192,
+            "concurrency": 32,
+            "body": {
+              "type": "sd",
+              "a": 1
+            },
+            "elapsed_seconds": 0.3219619579904247,
+            "statuses": {
+              "200": 165,
+              "503": 27
+            },
+            "errors": {},
+            "p95_ms": 124.577
+          },
+          "http_503_counter_delta": 27
+        }
+      ],
+      "cleanup": [
+        {
+          "service": "lab-overload",
+          "exit_code": 0,
+          "stopped": true
+        },
+        {
+          "service": "lab-sibling",
+          "exit_code": 0,
+          "stopped": true
+        },
+        {
+          "service": "lab-target",
+          "exit_code": 0,
+          "stopped": true
+        }
+      ],
+      "cloud_model_api_calls": 0
+    },
+    {
+      "id": "frozen-second-degree-2",
+      "role": "post_selection_replication",
+      "started_at_utc": "2026-11-16T07:45:41.027772+00:00",
+      "finished_at_utc": "2026-11-16T07:45:43.236301+00:00",
+      "private_results_sha256": "8f4fcdda8f9ba2be4c2fe65c818066cb0662a4c45f810fa25fdccc3a8b2fcff0",
+      "parameters": {
+        "nodes": 5000,
+        "degree": 8,
+        "seed": 42,
+        "requests": 192,
+        "concurrency": 32
+      },
+      "passed": true,
+      "scenarios": [
+        {
+          "name": "healthy",
+          "passed": true,
+          "checks": {
+            "business_passed": true,
+            "managed_target_running": true,
+            "only_target_pid_attributed": true,
+            "at_least_two_retained_samples": true
+          }
+        },
+        {
+          "name": "health_ok_business_assertion_failed",
+          "passed": true,
+          "checks": {
+            "health_http_200": true,
+            "business_http_200": true,
+            "registered_json_assertion_failed": true,
+            "business_not_accepted": true,
+            "profile_history_isolated": true
+          }
+        },
+        {
+          "name": "stopped_target_with_other_instance_alive",
+          "passed": true,
+          "checks": {
+            "target_not_running": true,
+            "no_pid_attributed_to_stopped_target": true,
+            "sibling_still_business_healthy": true,
+            "sibling_only_other_observed": true,
+            "target_business_unavailable": true
+          }
+        },
+        {
+          "name": "bounded_overload",
+          "passed": true,
+          "checks": {
+            "http_503_observed": true,
+            "exported_503_counter_increased": true,
+            "finite_request_accounting": true,
+            "business_recovers_after_load": true
+          },
+          "load": {
+            "requests": 192,
+            "concurrency": 32,
+            "body": {
+              "type": "sd",
+              "a": 1
+            },
+            "elapsed_seconds": 0.3323100839916151,
+            "statuses": {
+              "503": 24,
+              "200": 168
+            },
+            "errors": {},
+            "p95_ms": 157.326
+          },
+          "http_503_counter_delta": 24
+        }
+      ],
+      "cleanup": [
+        {
+          "service": "lab-overload",
+          "exit_code": 0,
+          "stopped": true
+        },
+        {
+          "service": "lab-sibling",
+          "exit_code": 0,
+          "stopped": true
+        },
+        {
+          "service": "lab-target",
+          "exit_code": 0,
+          "stopped": true
+        }
+      ],
+      "cloud_model_api_calls": 0
+    }
+  ]
+}

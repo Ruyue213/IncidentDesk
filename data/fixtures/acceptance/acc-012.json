@@ -1,0 +1,39 @@
+{
+  "incident_id": "acc-012",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-26T08:00:00+00:00",
+    "end": "2026-10-26T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-012-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-26T08:01:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:01Z已出现DBConnectionAcquireTimeout；08:02Z错误继续，获取连接等待2s。"
+    },
+    {
+      "evidence_id": "acc-012-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-26T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:05Z操作人员将pool_max从30降至15，该配置于08:06Z确认生效；变更是异常开始后的人工尝试。"
+    },
+    {
+      "evidence_id": "acc-012-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-26T08:03:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:03Z pool_max仍为30，活跃30、等待20；数据库查询p95为950ms，基线20ms。"
+    },
+    {
+      "evidence_id": "acc-012-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-26T08:08:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:08Z pool_max为15、等待40，数据库查询p95仍900ms；本窗缺少数据库慢查询明细。"
+    }
+  ]
+}

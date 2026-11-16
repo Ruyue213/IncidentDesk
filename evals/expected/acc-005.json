@@ -1,0 +1,45 @@
+{
+  "incident_id": "acc-005",
+  "incident_group": "pool-trigger-unknown-e",
+  "synthetic": true,
+  "fault_family": "insufficient_evidence",
+  "expected_behavior": "insufficient",
+  "expected_evidence_ids": [
+    "acc-005-m-01",
+    "acc-005-l-01"
+  ],
+  "supporting_evidence_ids": [
+    "acc-005-m-01",
+    "acc-005-l-01"
+  ],
+  "contradicting_evidence_ids": [],
+  "expected_doc_ids": [
+    "kb-002",
+    "kb-006"
+  ],
+  "missing_information": [
+    "有效配置与变更记录",
+    "数据库延迟与连接持有时间",
+    "请求量基线"
+  ],
+  "acceptable_conclusions": [
+    "可以定位到连接获取受限，尚不能在配置缩减、数据库变慢或需求增长之间确定触发原因。"
+  ],
+  "recommended_checks": [
+    "补采有效配置和变更",
+    "补采数据库耗时/连接持有/流量基线"
+  ],
+  "must_express_uncertainty": true,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单",
+    "现有数据足以给出唯一确定根因"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

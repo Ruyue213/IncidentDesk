@@ -1,0 +1,32 @@
+{
+  "incident_id": "acc-010",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-24T08:00:00+00:00",
+    "end": "2026-10-24T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-010-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-24T08:04:00+00:00",
+      "version": "fixtures-v1",
+      "content": "10条采样日志中2条为inventory-api ReadTimeout；采样比例和全量请求数未知。"
+    },
+    {
+      "evidence_id": "acc-010-l-02",
+      "source": "logs",
+      "observed_at": "2026-10-24T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "采集说明：metrics导出失败；当前日志窗口只覆盖08:04Z至08:05Z，不能代表整个08:00Z至09:00Z。"
+    },
+    {
+      "evidence_id": "acc-010-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-24T08:02:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:02Z checkout-api版本变更记录存在，但变更内容及有效配置未导出。"
+    }
+  ]
+}

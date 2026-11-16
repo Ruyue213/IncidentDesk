@@ -1,0 +1,39 @@
+{
+  "incident_id": "acc-011",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-25T08:00:00+00:00",
+    "end": "2026-10-25T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-011-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-25T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "业务请求量仅增5%，geo-api调用量增4.8倍；新批量地址校验路径每订单调用geo-api平均5次，依赖429达19%。"
+    },
+    {
+      "evidence_id": "acc-011-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-25T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "同一批量校验trace包含5个并行geo-api调用，其中2个返回429、Retry-After=10；非批量路径依赖错误较少。"
+    },
+    {
+      "evidence_id": "acc-011-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-25T08:01:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:01Z启用批量地址校验fan-out=5；重试次数仍为1，供应商分钟配额仍为2000。"
+    },
+    {
+      "evidence_id": "acc-011-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-25T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "数据库p95为18ms、连接池等待0；geo-api单次非429响应p95为70ms。"
+    }
+  ]
+}

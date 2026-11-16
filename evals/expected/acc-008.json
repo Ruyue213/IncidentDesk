@@ -1,0 +1,50 @@
+{
+  "incident_id": "acc-008",
+  "incident_group": "db-slow-secondary-pool-h",
+  "synthetic": true,
+  "fault_family": "conflicting_evidence",
+  "expected_behavior": "conflict",
+  "expected_evidence_ids": [
+    "acc-008-m-01",
+    "acc-008-l-01",
+    "acc-008-c-01",
+    "acc-008-m-02"
+  ],
+  "supporting_evidence_ids": [
+    "acc-008-m-01",
+    "acc-008-l-01",
+    "acc-008-c-01",
+    "acc-008-m-02"
+  ],
+  "contradicting_evidence_ids": [
+    "acc-008-c-01",
+    "acc-008-m-02"
+  ],
+  "expected_doc_ids": [
+    "kb-002",
+    "kb-007"
+  ],
+  "missing_information": [
+    "慢SQL计划/锁等待与数据库负载来源"
+  ],
+  "acceptable_conclusions": [
+    "数据库查询变慢可能导致连接持有增长和次生池等待，证据反对将缩小连接池作为初始原因；扩大连接池不能视作已解决。"
+  ],
+  "recommended_checks": [
+    "核对慢SQL执行计划与锁等待",
+    "比较异常及配置生效时间"
+  ],
+  "must_express_uncertainty": true,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单",
+    "现有数据足以给出唯一确定根因"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

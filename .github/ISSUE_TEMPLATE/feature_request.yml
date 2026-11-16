@@ -1,0 +1,17 @@
+name: Workflow improvement
+description: Propose an improvement grounded in a real investigation.
+body:
+  - type: textarea
+    id: workflow
+    attributes:
+      label: User workflow and current obstacle
+      description: Describe an actual investigation, available evidence sources, and the work you cannot complete today.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Observable success
+      description: What reproducible check would show that this solves the problem? Include operational constraints and alternatives considered.
+    validations:
+      required: true

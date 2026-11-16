@@ -1,0 +1,46 @@
+{
+  "incident_id": "dev-003",
+  "incident_group": "shipping-retry-c",
+  "synthetic": true,
+  "fault_family": "dependency_rate_limit",
+  "expected_behavior": "supported",
+  "expected_evidence_ids": [
+    "dev-003-m-01",
+    "dev-003-m-02",
+    "dev-003-l-01",
+    "dev-003-c-01"
+  ],
+  "supporting_evidence_ids": [
+    "dev-003-m-01",
+    "dev-003-m-02",
+    "dev-003-l-01",
+    "dev-003-c-01"
+  ],
+  "contradicting_evidence_ids": [],
+  "expected_doc_ids": [
+    "kb-004",
+    "kb-001"
+  ],
+  "missing_information": [
+    "缺少shipping-api实际配额与其他调用方用量"
+  ],
+  "acceptable_conclusions": [
+    "依赖明确返回429，重试放大可能加重限流；不能单凭配置记录证明首次限流起因。"
+  ],
+  "recommended_checks": [
+    "核对依赖配额和调用方分布",
+    "检查Retry-After与退避配置"
+  ],
+  "must_express_uncertainty": false,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

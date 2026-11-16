@@ -1,0 +1,39 @@
+{
+  "incident_id": "dev-006",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-06T08:00:00+00:00",
+    "end": "2026-10-06T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "dev-006-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-06T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "checkout-api错误率6.2%，payment-api p95为2.8s；数据库p95为18ms，连接池活跃7/20且等待0。"
+    },
+    {
+      "evidence_id": "dev-006-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-06T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:06Z失败trace均在payment-api /authorize发生ReadTimeout，未见获取连接超时。"
+    },
+    {
+      "evidence_id": "dev-006-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-06T08:01:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:01Z发布将pool_max从40调整为20；配置实际生效已确认。"
+    },
+    {
+      "evidence_id": "dev-006-l-02",
+      "source": "logs",
+      "observed_at": "2026-10-06T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "采集说明：仅导出10条失败trace，不能保证覆盖全部错误请求。"
+    }
+  ]
+}

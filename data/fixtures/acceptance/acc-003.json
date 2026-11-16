@@ -1,0 +1,39 @@
+{
+  "incident_id": "acc-003",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-17T08:00:00+00:00",
+    "end": "2026-10-17T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-003-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-17T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "checkout-api业务请求量稳定在400/min，address-api调用量约420/min；依赖429由0增至17%。"
+    },
+    {
+      "evidence_id": "acc-003-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-17T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "共享凭据总调用量为2600/min，有效配额2000/min；checkout-api尝试次数保持1.0。"
+    },
+    {
+      "evidence_id": "acc-003-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-17T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "address-api返回429、Retry-After=20、credential=shared-merchant；错误映射为订单503。"
+    },
+    {
+      "evidence_id": "acc-003-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-17T08:01:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:01Z另一个批处理调用方开始使用相同商户凭据，新增约2100/min请求；checkout-api配置未变。"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "incident_id": "acc-008",
+  "service_id": "checkout-api",
+  "window": {
+    "start": "2026-10-22T08:00:00+00:00",
+    "end": "2026-10-22T09:00:00+00:00"
+  },
+  "question": "连接池被告警但数据库CPU也高，请判断是否能只调整连接池。"
+}

@@ -1,0 +1,49 @@
+{
+  "incident_id": "acc-010",
+  "incident_group": "partial-logs-no-metrics-j",
+  "synthetic": true,
+  "fault_family": "insufficient_evidence",
+  "expected_behavior": "insufficient",
+  "expected_evidence_ids": [
+    "acc-010-l-01",
+    "acc-010-l-02",
+    "acc-010-c-01"
+  ],
+  "supporting_evidence_ids": [
+    "acc-010-l-01",
+    "acc-010-l-02",
+    "acc-010-c-01"
+  ],
+  "contradicting_evidence_ids": [],
+  "expected_doc_ids": [
+    "kb-006",
+    "kb-003",
+    "kb-007"
+  ],
+  "missing_information": [
+    "全窗metrics与请求总量",
+    "日志采样比例",
+    "发布内容与有效配置",
+    "依赖端证据"
+  ],
+  "acceptable_conclusions": [
+    "可以报告采样中出现下游超时，不能推算全服务错误率，也不能认定发布导致全窗故障。"
+  ],
+  "recommended_checks": [
+    "补齐全窗指标和日志采样信息",
+    "获取发布内容与依赖端耗时"
+  ],
+  "must_express_uncertainty": true,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单",
+    "现有数据足以给出唯一确定根因"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

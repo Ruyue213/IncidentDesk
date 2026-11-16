@@ -1,0 +1,39 @@
+{
+  "incident_id": "dev-008",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-08T08:00:00+00:00",
+    "end": "2026-10-08T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "dev-008-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-08T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "checkout-api向客户端返回的429为0，但tax-api依赖调用中429占15%，订单接口502为4.1%。"
+    },
+    {
+      "evidence_id": "dev-008-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-08T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "tax-api平均尝试次数为1.0、业务请求量无明显变化；数据库和连接池无异常。"
+    },
+    {
+      "evidence_id": "dev-008-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-08T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "tax-api响应HTTP429，Retry-After=60，quota bucket=merchant-shared；checkout-api将该依赖错误映射为502。"
+    },
+    {
+      "evidence_id": "dev-008-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-08T08:03:00+00:00",
+      "version": "fixtures-v1",
+      "content": "供应商通知08:03Z共享账户tax-api分钟配额由2000降至1000；本应用重试配置未变。"
+    }
+  ]
+}

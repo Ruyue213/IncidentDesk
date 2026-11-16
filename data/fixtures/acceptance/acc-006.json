@@ -1,0 +1,39 @@
+{
+  "incident_id": "acc-006",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-20T08:00:00+00:00",
+    "end": "2026-10-20T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-006-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-20T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "全量聚合显示payment-api p95为85ms、数据库p95为20ms，但仅覆盖实例b；实例a指标导出缺失。"
+    },
+    {
+      "evidence_id": "acc-006-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-20T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "实例a的失败trace出现payment-api ReadTimeout；实例b另有少量DBConnectionAcquireTimeout。"
+    },
+    {
+      "evidence_id": "acc-006-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-20T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "实例b连接池活跃20/20、短时等待18；实例a有效pool_max及依赖指标未知。"
+    },
+    {
+      "evidence_id": "acc-006-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-20T08:01:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:01Z配置发布覆盖a/b，但采集器随后只导出了b的指标；配置变更内容没有导出。"
+    }
+  ]
+}

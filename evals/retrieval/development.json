@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "split": "development",
+  "queries": [
+    {"id":"dev-01","kind":"exact_identifier","query":"EADDRINUSE after startup; health still returns HTTP 200","relevance":{"docs/port-ownership.md":2}},
+    {"id":"dev-02","kind":"exact_identifier","query":"ConnectionAcquireTimeout pool_active reaches pool_limit, SQL time normal","relevance":{"docs/connection-pool.md":2}},
+    {"id":"dev-03","kind":"exact_identifier","query":"cache_enabled=false and zero cache hits, is Redis outage the cause?","relevance":{"docs/cache-mode.md":2}},
+    {"id":"dev-04","kind":"exact_identifier","query":"request_total decreases after process_start_time_seconds changes","relevance":{"docs/counter-resets.md":2}},
+    {"id":"dev-05","kind":"english_paraphrase","query":"The process answers its liveness check but the graph result is wrong. What verification is missing?","relevance":{"docs/readiness-business.md":2}},
+    {"id":"dev-06","kind":"english_paraphrase","query":"User traffic is unchanged but every logical request now causes many attempts and overload spreads.","relevance":{"docs/retry-amplification.md":2}},
+    {"id":"dev-07","kind":"english_paraphrase","query":"A display reports huge memory usage. Could it be allocated capacity or the wrong unit rather than resident pages?","relevance":{"docs/memory-accounting.md":2}},
+    {"id":"dev-08","kind":"english_paraphrase","query":"Writes stall while free disk capacity disappears. What evidence should be collected before touching persistent files?","relevance":{"docs/durable-storage.md":2}},
+    {"id":"dev-09","kind":"chinese_paraphrase","query":"计算已经很快完成，但调用方迟迟不接收返回结果，连接和发送缓冲一直占用，应该看什么？","relevance":{"docs/slow-consumers.md":2}},
+    {"id":"dev-10","kind":"chinese_paraphrase","query":"任务还没开始执行就在入口排队，工作线程全满，直接扩大等待队列真的能提高吞吐吗？","relevance":{"docs/admission-queue.md":2}},
+    {"id":"dev-11","kind":"chinese_paraphrase","query":"第三方接口的响应先变慢，本机排队随后增加，怎样核对依赖耗时与本地等待的先后关系？","relevance":{"docs/downstream-latency.md":2}},
+    {"id":"dev-12","kind":"chinese_paraphrase","query":"上线时间靠近故障时间，但代码目录里的修改未必是进程正在运行的版本，如何核实？","relevance":{"docs/deployment-comparison.md":2}}
+  ]
+}

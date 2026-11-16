@@ -1,0 +1,39 @@
+{
+  "incident_id": "acc-004",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-18T08:00:00+00:00",
+    "end": "2026-10-18T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-004-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-18T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "checkout-api错误率0.25%、p95为195ms，与基线0.2%-0.5%和180-240ms一致；真实业务请求成功率99.75%。"
+    },
+    {
+      "evidence_id": "acc-004-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-18T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "告警表达式输入为synthetic-probe错误率80%，该探针使用已过期测试凭据；真实订单指标未使用该探针标签。"
+    },
+    {
+      "evidence_id": "acc-004-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-18T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "synthetic-probe请求因测试凭据过期返回401；真实checkout请求无同类错误聚集。"
+    },
+    {
+      "evidence_id": "acc-004-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-18T08:02:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:02Z监控规则将synthetic-probe与业务告警合并；应用版本未变。"
+    }
+  ]
+}

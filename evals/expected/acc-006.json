@@ -1,0 +1,52 @@
+{
+  "incident_id": "acc-006",
+  "incident_group": "mixed-instance-conflict-f",
+  "synthetic": true,
+  "fault_family": "conflicting_evidence",
+  "expected_behavior": "conflict",
+  "expected_evidence_ids": [
+    "acc-006-m-01",
+    "acc-006-l-01",
+    "acc-006-m-02",
+    "acc-006-c-01"
+  ],
+  "supporting_evidence_ids": [
+    "acc-006-m-01",
+    "acc-006-l-01",
+    "acc-006-m-02",
+    "acc-006-c-01"
+  ],
+  "contradicting_evidence_ids": [
+    "acc-006-m-01",
+    "acc-006-l-01"
+  ],
+  "expected_doc_ids": [
+    "kb-007",
+    "kb-003",
+    "kb-002"
+  ],
+  "missing_information": [
+    "实例a完整指标",
+    "各实例有效配置与全部错误分布"
+  ],
+  "acceptable_conclusions": [
+    "不同实例的观测覆盖不一致且有两类错误，不能以b的正常下游聚合指标否定a超时，也不能选一个全局根因。"
+  ],
+  "recommended_checks": [
+    "按实例与路径补齐同窗证据",
+    "核对采集范围与配置内容"
+  ],
+  "must_express_uncertainty": true,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单",
+    "现有数据足以给出唯一确定根因"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

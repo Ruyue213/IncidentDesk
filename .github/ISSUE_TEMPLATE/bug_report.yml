@@ -1,0 +1,24 @@
+name: Reproducible failure
+description: Report a diagnosis, collection, recovery, or installation failure.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Observed and expected behavior
+      description: Include the affected workflow and what the evidence shows. Avoid credentials, raw business logs, and private source.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal synthetic reproduction
+      description: List the exact steps and a small non-sensitive example. For service-specific failures, describe the read-only API contract.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and verification
+      description: IncidentDesk version, OS, Python version, install method, model identifier/reasoning setting, relevant error type, and whether a scripted or real model was used. Do not paste a Key or full settings file.
+    validations:
+      required: true

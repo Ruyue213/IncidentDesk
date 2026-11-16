@@ -1,0 +1,39 @@
+{
+  "incident_id": "dev-003",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-03T08:00:00+00:00",
+    "end": "2026-10-03T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "dev-003-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-03T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "checkout-api错误率7.5%；shipping-api调用中HTTP429占21%，依赖延迟p95为80ms。"
+    },
+    {
+      "evidence_id": "dev-003-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-03T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "每订单shipping-api平均尝试从1.0增至3.7；外部业务请求量稳定，数据库和连接池指标正常。"
+    },
+    {
+      "evidence_id": "dev-003-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-03T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "shipping-api响应429，body=quota_exceeded，Retry-After=30；同一订单出现3次立即重试。"
+    },
+    {
+      "evidence_id": "dev-003-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-03T08:01:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:01Z checkout-api的shipping重试配置由最多1次改为最多4次，未配置退避；依赖侧配额记录缺失。"
+    }
+  ]
+}

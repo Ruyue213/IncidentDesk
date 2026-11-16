@@ -1,0 +1,46 @@
+{
+  "incident_id": "acc-007",
+  "incident_group": "queue-retry-amplification-g",
+  "synthetic": true,
+  "fault_family": "downstream_latency",
+  "expected_behavior": "supported",
+  "expected_evidence_ids": [
+    "acc-007-m-01",
+    "acc-007-l-01",
+    "acc-007-c-01",
+    "acc-007-m-02"
+  ],
+  "supporting_evidence_ids": [
+    "acc-007-m-01",
+    "acc-007-l-01",
+    "acc-007-c-01",
+    "acc-007-m-02"
+  ],
+  "contradicting_evidence_ids": [],
+  "expected_doc_ids": [
+    "kb-003",
+    "kb-004"
+  ],
+  "missing_information": [
+    "fraud-api端队列与处理耗时原始指标"
+  ],
+  "acceptable_conclusions": [
+    "下游单次延迟上升是当前主要线索，已有重试策略放大总耗时；不应写成本窗口刚增加重试次数造成首次异常。"
+  ],
+  "recommended_checks": [
+    "核对fraud-api队列与单次耗时",
+    "比较重试前后总调用时间"
+  ],
+  "must_express_uncertainty": false,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

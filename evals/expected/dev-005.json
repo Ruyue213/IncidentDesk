@@ -1,0 +1,43 @@
+{
+  "incident_id": "dev-005",
+  "incident_group": "missing-export-e",
+  "synthetic": true,
+  "fault_family": "insufficient_evidence",
+  "expected_behavior": "insufficient",
+  "expected_evidence_ids": [
+    "dev-005-m-01"
+  ],
+  "supporting_evidence_ids": [
+    "dev-005-m-01"
+  ],
+  "contradicting_evidence_ids": [],
+  "expected_doc_ids": [
+    "kb-006",
+    "kb-001"
+  ],
+  "missing_information": [
+    "同窗错误日志",
+    "近期变更与有效配置",
+    "数据库/连接池/依赖指标"
+  ],
+  "acceptable_conclusions": [
+    "可以确认接口指标异常，但现有证据不足以在连接池、下游延迟、限流中指定根因。"
+  ],
+  "recommended_checks": [
+    "补采同窗logs和changes",
+    "补采数据库/连接池/依赖指标"
+  ],
+  "must_express_uncertainty": true,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单",
+    "现有数据足以给出唯一确定根因"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

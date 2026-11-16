@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "dataset": "synthetic-service-runbooks-v1",
+  "files": {
+    "corpus/admission-queue.md": "21b6a74d50f53621c4e11262be738e283e788efbecbc69cd0c831d193a36b3bd",
+    "corpus/cache-mode.md": "7f674c22f80a58126a54021cbe682417448f69069a4b9e663ab86e2ad9f61ebd",
+    "corpus/connection-pool.md": "0510a1baada9b46bad85184f272d06ac594f7ee377333d38a87e84ab36d45e03",
+    "corpus/counter-resets.md": "b2603f6daa96326421f20d1ab295f65b41111f7e2497a0577daf29b9ef69050d",
+    "corpus/deployment-comparison.md": "172e13c91f4af933ac8da660e67ee6f5b17e6135c1cdfb2811257d88bf0d77a6",
+    "corpus/downstream-latency.md": "7a5f98a0df9d1f513603a8a38be08a27b06e761dd9c5803e8377ac854fd384dd",
+    "corpus/durable-storage.md": "3b4bb55dd7c43867f336f8f3527c0046061781c27609d8641e47c7ae6d272871",
+    "corpus/memory-accounting.md": "ecb905a8fe3121c8c1d9748f92ba954fde4145cdf3381633240dcef93716072e",
+    "corpus/port-ownership.md": "60026be052a23ce1dda5aab8c6c73eda58bb106135e65b5283625f226548ad7e",
+    "corpus/readiness-business.md": "85507098fdef1da5773ff160a4b74f86ba29486b7f8a4d1a097889c8a0802cbb",
+    "corpus/retry-amplification.md": "6251fa9df55225364a0fae532aeb172bcf860b5d46737dd5b366789e120f17c5",
+    "corpus/slow-consumers.md": "09cc76137d0291cf2ba8ae96099e3c5f7c19af930091cde6cbcdee95d4177e6a",
+    "development.json": "33eeffaeade28a6dc202322b61aa3b4fd7287a3956ef2161254f124a3703939c",
+    "holdout.json": "62b45cabdae124a7c49bb5d62b7ddd26df4b930c575b7dab6af2c76712094797"
+  },
+  "sha256": "fc682e8ea13bf4acc9b815daee958aa06cd4ff7785783b5417576eca0c8c097b"
+}

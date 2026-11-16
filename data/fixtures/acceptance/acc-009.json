@@ -1,0 +1,39 @@
+{
+  "incident_id": "acc-009",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-23T08:00:00+00:00",
+    "end": "2026-10-23T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-009-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-23T08:01:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:01Z发布仅修改订单详情响应中的展示文案；有效数据库/依赖/重试配置未变。"
+    },
+    {
+      "evidence_id": "acc-009-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-23T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "发布前后错误率分别0.35%和0.32%，均在0.2%-0.5%基线；p95均约210ms，业务量稳定。"
+    },
+    {
+      "evidence_id": "acc-009-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-23T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "6条失败请求均是客户端取消，分布在发布前后；无新增服务端错误类型。"
+    },
+    {
+      "evidence_id": "acc-009-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-23T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "数据库p95为17ms、连接池等待0、依赖429为0、依赖p95为76ms。"
+    }
+  ]
+}

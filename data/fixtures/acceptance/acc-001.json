@@ -1,0 +1,39 @@
+{
+  "incident_id": "acc-001",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-15T08:00:00+00:00",
+    "end": "2026-10-15T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-001-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-15T08:04:00+00:00",
+      "version": "fixtures-v1",
+      "content": "实例a的pool_max为6、活跃6、等待队列38、错误率18%；实例b的pool_max为36、活跃10、等待0、错误率0.3%。"
+    },
+    {
+      "evidence_id": "acc-001-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-15T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "两个实例请求量相近；数据库p95均为19ms、CPU约29%；依赖p95均低于90ms。"
+    },
+    {
+      "evidence_id": "acc-001-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-15T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "DBConnectionAcquireTimeout集中在实例a，实例b同期成功处理同路径请求。"
+    },
+    {
+      "evidence_id": "acc-001-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-15T08:01:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:01Z仅实例a灰度加载pool_max=6；实例b仍为36；配置清单确认各自生效值。"
+    }
+  ]
+}

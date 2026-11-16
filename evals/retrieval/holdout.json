@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "split": "holdout",
+  "queries": [
+    {"id":"holdout-01","kind":"exact_identifier","query":"queue_depth reaches queue_capacity while pool_waiters stays zero","relevance":{"docs/admission-queue.md":2}},
+    {"id":"holdout-02","kind":"exact_identifier","query":"fsync_seconds spikes with ENOSPC but /health succeeds","relevance":{"docs/durable-storage.md":2}},
+    {"id":"holdout-03","kind":"exact_identifier","query":"pending_output_bytes and response_write_seconds grow despite fast computation","relevance":{"docs/slow-consumers.md":2}},
+    {"id":"holdout-04","kind":"exact_identifier","query":"request_attempts_total rises much faster than logical_requests_total","relevance":{"docs/retry-amplification.md":2}},
+    {"id":"holdout-05","kind":"english_paraphrase","query":"A dashboard asks for last night's failure rate but the collector only has a single current process snapshot. Can it reconstruct history?","relevance":{"docs/counter-resets.md":2}},
+    {"id":"holdout-06","kind":"english_paraphrase","query":"The new server never bound its socket, yet the endpoint is responding. Could the listener be an unrelated executable?","relevance":{"docs/port-ownership.md":2}},
+    {"id":"holdout-07","kind":"english_paraphrase","query":"Requests time out leasing connections after a configuration limit was lowered, but the database executes queries quickly.","relevance":{"docs/connection-pool.md":2}},
+    {"id":"holdout-08","kind":"english_paraphrase","query":"A service starts without its optional accelerator by design. Should a missing cache process automatically trigger repair?","relevance":{"docs/cache-mode.md":2}},
+    {"id":"holdout-09","kind":"chinese_paraphrase","query":"存活探针通过，但固定的只读业务查询得到错误内容，为什么不能认定服务正常？","relevance":{"docs/readiness-business.md":2}},
+    {"id":"holdout-10","kind":"chinese_paraphrase","query":"监控里的累计申请量越来越大，但操作系统常驻页稳定，能不能据此断言发生了内存泄漏？","relevance":{"docs/memory-accounting.md":2}},
+    {"id":"holdout-11","kind":"chinese_paraphrase","query":"最近一次发布之后错误出现了，仅凭提交时间就执行回滚是否有充分证据？","relevance":{"docs/deployment-comparison.md":2}},
+    {"id":"holdout-12","kind":"chinese_paraphrase","query":"请求耗时主要消耗在外部服务等待响应，而不是本地获取连接，怎样进一步定位？","relevance":{"docs/downstream-latency.md":2}}
+  ]
+}

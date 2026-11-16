@@ -1,0 +1,49 @@
+{
+  "incident_id": "dev-006",
+  "incident_group": "pool-release-conflict-f",
+  "synthetic": true,
+  "fault_family": "conflicting_evidence",
+  "expected_behavior": "conflict",
+  "expected_evidence_ids": [
+    "dev-006-m-01",
+    "dev-006-l-01",
+    "dev-006-c-01"
+  ],
+  "supporting_evidence_ids": [
+    "dev-006-m-01",
+    "dev-006-l-01",
+    "dev-006-c-01"
+  ],
+  "contradicting_evidence_ids": [
+    "dev-006-m-01",
+    "dev-006-l-01"
+  ],
+  "expected_doc_ids": [
+    "kb-007",
+    "kb-002",
+    "kb-003"
+  ],
+  "missing_information": [
+    "全部错误类型分布与payment-api端证据"
+  ],
+  "acceptable_conclusions": [
+    "连接池变更与异常时间相关，但无等待且下游超时证据反对直接归因；当前更支持下游调用延迟，保留采样限制。"
+  ],
+  "recommended_checks": [
+    "按全部错误类型及路径拆分",
+    "检查payment-api端耗时"
+  ],
+  "must_express_uncertainty": true,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单",
+    "现有数据足以给出唯一确定根因"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}

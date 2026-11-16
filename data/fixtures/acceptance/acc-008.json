@@ -1,0 +1,39 @@
+{
+  "incident_id": "acc-008",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-22T08:00:00+00:00",
+    "end": "2026-10-22T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "acc-008-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-22T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "连接池活跃40/40、等待队列50、错误率10%；数据库CPU95%、查询p95从18ms升至1.6s。"
+    },
+    {
+      "evidence_id": "acc-008-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-22T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "请求先执行慢SQL持有连接约1.7s，随后其他请求出现DBConnectionAcquireTimeout。"
+    },
+    {
+      "evidence_id": "acc-008-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-22T08:02:00+00:00",
+      "version": "fixtures-v1",
+      "content": "08:02Z pool_max由40增至60；慢SQL与错误在08:01Z已开始。"
+    },
+    {
+      "evidence_id": "acc-008-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-22T08:08:00+00:00",
+      "version": "fixtures-v1",
+      "content": "pool_max生效60后数据库CPU仍94%、连接等待仍有35；下游p95稳定80ms。"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "incident_id": "dev-002",
+  "service_id": "checkout-api",
+  "version": "fixtures-v1",
+  "window": {
+    "start": "2026-10-02T08:00:00+00:00",
+    "end": "2026-10-02T09:00:00+00:00"
+  },
+  "evidence": [
+    {
+      "evidence_id": "dev-002-m-01",
+      "source": "metrics",
+      "observed_at": "2026-10-02T08:05:00+00:00",
+      "version": "fixtures-v1",
+      "content": "checkout-api p95为3.8s、错误率9.2%；payment-api调用p95为3.4s，基线110ms。"
+    },
+    {
+      "evidence_id": "dev-002-m-02",
+      "source": "metrics",
+      "observed_at": "2026-10-02T08:06:00+00:00",
+      "version": "fixtures-v1",
+      "content": "数据库查询p95为20ms；连接池活跃12/40且等待队列0；请求量与基线持平。"
+    },
+    {
+      "evidence_id": "dev-002-l-01",
+      "source": "logs",
+      "observed_at": "2026-10-02T08:07:00+00:00",
+      "version": "fixtures-v1",
+      "content": "失败请求trace显示 payment-api /authorize HTTP ReadTimeout，耗时3s；没有DBConnectionAcquireTimeout。"
+    },
+    {
+      "evidence_id": "dev-002-c-01",
+      "source": "changes",
+      "observed_at": "2026-10-02T08:02:00+00:00",
+      "version": "fixtures-v1",
+      "content": "当前窗口checkout-api未记录发布或超时配置变更；payment-api内部变更记录未采集。"
+    }
+  ]
+}

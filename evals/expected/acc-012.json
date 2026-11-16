@@ -1,0 +1,52 @@
+{
+  "incident_id": "acc-012",
+  "incident_group": "post-onset-intervention-l",
+  "synthetic": true,
+  "fault_family": "conflicting_evidence",
+  "expected_behavior": "conflict",
+  "expected_evidence_ids": [
+    "acc-012-l-01",
+    "acc-012-c-01",
+    "acc-012-m-01",
+    "acc-012-m-02"
+  ],
+  "supporting_evidence_ids": [
+    "acc-012-l-01",
+    "acc-012-c-01",
+    "acc-012-m-01",
+    "acc-012-m-02"
+  ],
+  "contradicting_evidence_ids": [
+    "acc-012-l-01",
+    "acc-012-c-01",
+    "acc-012-m-01"
+  ],
+  "expected_doc_ids": [
+    "kb-007",
+    "kb-002"
+  ],
+  "missing_information": [
+    "数据库慢查询明细及连接持有",
+    "调整前请求量与数据库负载来源"
+  ],
+  "acceptable_conclusions": [
+    "错误早于连接池缩减，缩减不能作为最初触发原因；数据库查询变慢与后续容量下降可能共同影响等待，不能给唯一已证实根因。"
+  ],
+  "recommended_checks": [
+    "核对变更实际生效与异常起点",
+    "获取慢查询与连接持有时间"
+  ],
+  "must_express_uncertainty": true,
+  "needs_human": true,
+  "forbidden_claims": [
+    "生产根因已被证明",
+    "已经自动修复或回滚",
+    "未批准已经创建工单",
+    "现有数据足以给出唯一确定根因"
+  ],
+  "scoring_notes": {
+    "cause": "按允许结论的语义核对；不要求逐字一致，不把故障类别命中等同正确因果。",
+    "missingness": "空结果不能当作确定不存在；明确列出可区分候选原因的缺证。",
+    "citations": "引用必须来自当前run实际取得的快照，核对内容支撑；禁止使用本标注文件作为引用。"
+  }
+}
