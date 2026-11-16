@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "scope": "Synthetic HTTPServer fixture startup on a GitHub-hosted macOS runner; zero provider calls",
+  "diagnostic_run": "https://github.com/Ruyue213/IncidentDesk/actions/runs/43870546557",
+  "diagnostic_commit": "bc36cc9bc9a2e0e7f1eacac8fc226a44cf9173de",
+  "python": "3.12",
+  "cases": [
+    {
+      "name": "unmodified_stdlib_httpserver",
+      "subprocess_deadline_seconds": 24,
+      "outcome": "TIMEOUT",
+      "markers_observed": [
+        "BEFORE_IMPORT",
+        "AFTER_IMPORT",
+        "BEFORE_SERVER"
+      ],
+      "repeated_stack": [
+        "socket.py:getfqdn",
+        "http/server.py:server_bind",
+        "socketserver.py:__init__"
+      ]
+    },
+    {
+      "name": "no_reverse_dns_control",
+      "outcome": "EXIT_0",
+      "markers_observed": [
+        "BEFORE_IMPORT",
+        "AFTER_IMPORT",
+        "BEFORE_SERVER",
+        "SERVER_CONSTRUCTED"
+      ],
+      "constructor_seconds_rounded_to_3dp": 0.0
+    }
+  ],
+  "interpretation": "The remote child reached HTTPServer construction and blocked in getfqdn before listen. A numeric loopback-name control constructed the real bound/listening server successfully. This is a test fixture dependency on reverse DNS, separate from the previously fixed process-identity race.",
+  "correction": "Use numeric-loopback HTTPServer subclasses in the three affected synthetic child fixtures; retain real TCP bind/listen, HTTP traffic, readiness deadlines and production ownership checks.",
+  "not_claimed": [
+    "Production diagnosis accuracy",
+    "General DNS latency or service-startup performance",
+    "No production timeout or identity guard was loosened"
+  ]
+}

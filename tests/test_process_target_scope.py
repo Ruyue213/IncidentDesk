@@ -23,13 +23,19 @@ async def test_target_identity_and_listener_exclude_other_same_cwd_instance(tmp_
     if not shutil.which("lsof") and not await asyncio.to_thread(Path("/proc/self/fd").is_dir):
         pytest.skip("Requires listener ownership inspection")
     script = tmp_path / "listener.py"
+    # This numeric loopback fixture must not depend on resolver availability.
     script.write_text("""from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import TCPServer
 import sys
+class LoopbackHTTPServer(HTTPServer):
+ def server_bind(self):
+  TCPServer.server_bind(self)
+  self.server_name='127.0.0.1'; self.server_port=self.server_address[1]
 class Handler(BaseHTTPRequestHandler):
  def do_GET(self):
   self.send_response(200); self.end_headers(); self.wfile.write(b'{}')
  def log_message(self,*args): pass
-server=HTTPServer(('127.0.0.1',0),Handler)
+server=LoopbackHTTPServer(('127.0.0.1',0),Handler)
 open(sys.argv[1],'w').write(str(server.server_port))
 server.serve_forever()
 """)

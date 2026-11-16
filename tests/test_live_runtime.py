@@ -427,12 +427,18 @@ async def test_managed_service_start_restart_health_and_no_duplicate_effect(tmp_
         reservation.bind(("127.0.0.1", 0))
         port = reservation.getsockname()[1]
     program = profile.root / "service.py"
+    # The fixture needs numeric loopback HTTP, not reverse-DNS server naming.
     program.write_text(
         "from http.server import HTTPServer, BaseHTTPRequestHandler\n"
+        "from socketserver import TCPServer\n"
+        "class LoopbackHTTPServer(HTTPServer):\n"
+        " def server_bind(self):\n"
+        "  TCPServer.server_bind(self)\n"
+        "  self.server_name='127.0.0.1'; self.server_port=self.server_address[1]\n"
         "class H(BaseHTTPRequestHandler):\n"
         " def do_GET(self):\n"
         "  self.send_response(200); self.end_headers(); self.wfile.write(b'healthy')\n"
-        f"HTTPServer(('127.0.0.1', {port}), H).serve_forever()\n"
+        f"LoopbackHTTPServer(('127.0.0.1', {port}), H).serve_forever()\n"
     )
     profile = ProjectStore(settings.local_dir).save(
         profile.model_dump(mode="json")

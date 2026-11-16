@@ -69,12 +69,18 @@ async def test_bootstrap_exec_freezes_final_identity_and_rejects_later_argv_chan
         reservation.bind(("127.0.0.1", 0))
         port = reservation.getsockname()[1]
     target = tmp_path / "final_service.py"
+    # Preserve real bind/listen/HTTP without environmental reverse-DNS work.
     target.write_text(
         "from http.server import HTTPServer, BaseHTTPRequestHandler\n"
+        "from socketserver import TCPServer\n"
+        "class LoopbackHTTPServer(HTTPServer):\n"
+        " def server_bind(self):\n"
+        "  TCPServer.server_bind(self)\n"
+        "  self.server_name='127.0.0.1'; self.server_port=self.server_address[1]\n"
         "class H(BaseHTTPRequestHandler):\n"
         " def do_GET(self):\n"
         "  self.send_response(200); self.end_headers()\n"
-        f"HTTPServer(('127.0.0.1',{port}),H).serve_forever()\n"
+        f"LoopbackHTTPServer(('127.0.0.1',{port}),H).serve_forever()\n"
     )
     gate = tmp_path / "exec-gate"
     launcher = tmp_path / "bootstrap.py"
