@@ -102,7 +102,7 @@ uv run --frozen --extra rag pytest -q
 npm test --prefix frontend
 uv build --out-dir dist
 uv export --frozen --all-extras --no-dev --no-emit-project --no-hashes --output-file dist/incidentdesk-constraints.txt
-python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
+uv run --frozen --extra rag python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
 ```
 
 发布检查在全新虚拟环境与无关工作目录安装 wheel，验证包内网页和静态资源、登记合成项目、完成脚本模型任务，再验证停止与备份／恢复；不调用供应商，不操作已有真实服务。CI 在 Linux 与 macOS 执行无需真实模型的检查。真实付费模型与具体目标服务集成需要另行显式验证；仅编写了 CI 文件不能视为对应平台已经验收。

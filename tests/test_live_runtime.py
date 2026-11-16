@@ -488,3 +488,63 @@ async def test_managed_service_start_restart_health_and_no_duplicate_effect(tmp_
             os.kill(state["pid"], signal.SIGTERM)
             await asyncio.sleep(0.2)
         await repo.close()
+
+
+class LongInvestigationModel(LiveModel):
+    async def _agenerate(self, messages, **kwargs):
+        results = [message for message in messages if isinstance(message, ToolMessage)]
+        if len(results) >= 10:
+            return await super()._agenerate(messages, **kwargs)
+        return ChatResult(
+            generations=[
+                ChatGeneration(
+                    message=AIMessage(
+                        content="",
+                        tool_calls=[
+                            {
+                                "name": "read_project_file",
+                                "args": {"path": "server.conf"},
+                                "id": f"long-{len(results)}",
+                            }
+                        ],
+                    )
+                )
+            ]
+        )
+
+
+@pytest.mark.asyncio
+async def test_middleware_steps_do_not_prematurely_exhaust_configured_call_budget(tmp_path):
+    settings, profile, request = context(tmp_path)
+    settings.model_call_limit = 16
+    settings.tool_call_limit = 40
+    repo = Repository(settings.app_db)
+    await repo.init()
+    try:
+        run, _ = await repo.create_run(request.model_dump(mode="json"), "long-investigation")
+        worker = Worker(settings, model_factory=lambda *_: LongInvestigationModel())
+        await worker.run(once=True)
+        finished = await repo.get_run(run["id"])
+        assert finished["status"] == "SUCCEEDED", finished["error"]
+        assert finished["tool_calls"] == 11
+        assert finished["diagnosis"]["supporting_evidence"][0]["quote"] == "queue=8"
+    finally:
+        await repo.close()
+
+
+@pytest.mark.asyncio
+async def test_long_investigation_still_respects_model_budget(tmp_path):
+    settings, profile, request = context(tmp_path)
+    settings.model_call_limit = 3
+    settings.tool_call_limit = 40
+    repo = Repository(settings.app_db)
+    await repo.init()
+    try:
+        run, _ = await repo.create_run(request.model_dump(mode="json"), "bounded-investigation")
+        await Worker(settings, model_factory=lambda *_: LongInvestigationModel()).run(once=True)
+        finished = await repo.get_run(run["id"])
+        assert finished["status"] == "FAILED"
+        assert finished["error"]["type"] == "BudgetExceeded"
+        assert finished["tool_calls"] == 3
+    finally:
+        await repo.close()

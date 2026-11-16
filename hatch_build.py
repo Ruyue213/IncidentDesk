@@ -11,6 +11,12 @@ from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 class CustomBuildHook(BuildHookInterface):
     def initialize(self, version, build_data):
+        self._temporary = None
+        # Source installations precede the Node build. Editable wheels point at
+        # the checkout, where RESOURCE_ROOT finds the UI after npm run build.
+        # Published wheels and source archives still require complete resources.
+        if self.target_name == "wheel" and version == "editable":
+            return
         root = Path(self.root)
         bundled = root / "src/incident_desk/resources"
         # An sdist already includes the curated tree under src; package discovery

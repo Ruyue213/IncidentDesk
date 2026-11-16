@@ -1,0 +1,3517 @@
+{
+  "schema": 1,
+  "evaluated_at": "2026-11-16T11:48:18.050697+00:00",
+  "dataset": {
+    "schema": 1,
+    "dataset": "synthetic-service-runbooks-v1",
+    "files": {
+      "corpus/admission-queue.md": "21b6a74d50f53621c4e11262be738e283e788efbecbc69cd0c831d193a36b3bd",
+      "corpus/cache-mode.md": "7f674c22f80a58126a54021cbe682417448f69069a4b9e663ab86e2ad9f61ebd",
+      "corpus/connection-pool.md": "0510a1baada9b46bad85184f272d06ac594f7ee377333d38a87e84ab36d45e03",
+      "corpus/counter-resets.md": "b2603f6daa96326421f20d1ab295f65b41111f7e2497a0577daf29b9ef69050d",
+      "corpus/deployment-comparison.md": "172e13c91f4af933ac8da660e67ee6f5b17e6135c1cdfb2811257d88bf0d77a6",
+      "corpus/downstream-latency.md": "7a5f98a0df9d1f513603a8a38be08a27b06e761dd9c5803e8377ac854fd384dd",
+      "corpus/durable-storage.md": "3b4bb55dd7c43867f336f8f3527c0046061781c27609d8641e47c7ae6d272871",
+      "corpus/memory-accounting.md": "ecb905a8fe3121c8c1d9748f92ba954fde4145cdf3381633240dcef93716072e",
+      "corpus/port-ownership.md": "60026be052a23ce1dda5aab8c6c73eda58bb106135e65b5283625f226548ad7e",
+      "corpus/readiness-business.md": "85507098fdef1da5773ff160a4b74f86ba29486b7f8a4d1a097889c8a0802cbb",
+      "corpus/retry-amplification.md": "6251fa9df55225364a0fae532aeb172bcf860b5d46737dd5b366789e120f17c5",
+      "corpus/slow-consumers.md": "09cc76137d0291cf2ba8ae96099e3c5f7c19af930091cde6cbcdee95d4177e6a",
+      "development.json": "33eeffaeade28a6dc202322b61aa3b4fd7287a3956ef2161254f124a3703939c",
+      "holdout.json": "62b45cabdae124a7c49bb5d62b7ddd26df4b930c575b7dab6af2c76712094797"
+    },
+    "sha256": "fc682e8ea13bf4acc9b815daee958aa06cd4ff7785783b5417576eca0c8c097b"
+  },
+  "split": "development",
+  "split_sha256": "33eeffaeade28a6dc202322b61aa3b4fd7287a3956ef2161254f124a3703939c",
+  "code": {
+    "git_commit": "9a054f93df305554a1a4b2567a610b38c40033ca",
+    "file_sha256": {
+      "src/incident_desk/knowledge/project_store.py": "0e9d0cac6b5f3294c589dbb2ff72b898310c2cb073890ad07085707fc6c695fa",
+      "src/incident_desk/knowledge/embeddings.py": "237782191b7e0f8ad3f869faf163e9b54d41df1dd7898caa41d36c1f213f1873",
+      "src/incident_desk/knowledge/store.py": "f0601b0aaad036055a74166985c1e2a8438a9377934d9cd1faa6fcb706f25ecc",
+      "scripts/evaluate_retrieval.py": "35adccb4e6220d7517cedcb2b172e9367147e1edde50f93ebbc17e17f8de3ed2",
+      "uv.lock": "e02dcf0d5dab7b6e1d32476739499cc57d2a5c72b76215fb83f0bb5984ce5ff8"
+    }
+  },
+  "environment": {
+    "sentence-transformers": "5.7.0",
+    "torch": "2.15.0",
+    "transformers": "5.23.0",
+    "huggingface-hub": "2.4.0",
+    "jieba": "0.42.1"
+  },
+  "protocol": {
+    "chunker": "heading-lines-320-v1",
+    "chunk_chars": 320,
+    "lexical": "generation-scoped-bm25-jieba-v1",
+    "dense": "exact normalized cosine",
+    "rrf_k": 60,
+    "fusion_candidates_per_channel": 50,
+    "top_k_chunk_slots": 5,
+    "document_diversity_first_pass": 2,
+    "failed_or_degraded_queries_count_as_zero": true,
+    "public_synthetic_only": true,
+    "cloud_model_calls": 0
+  },
+  "model": {
+    "state": "ready",
+    "model_id": "intfloat/multilingual-e5-small",
+    "revision": "fd1525a9fd15316a2d503bf26ab031a61d056e98",
+    "dimensions": 384,
+    "fingerprint": "intfloat/multilingual-e5-small@fd1525a9fd15316a2d503bf26ab031a61d056e98:384:l2:query-passage-v1",
+    "local_only": true,
+    "max_tokens": 512,
+    "download_required": false
+  },
+  "model_warmup_ms": 7663.008,
+  "model_warmup_error": null,
+  "index": {
+    "project_id": "retrieval-benchmark-v1",
+    "generation": "17d47c06fb675d90baeb0dbbafc33ec3f670cd3bcf4c2ffc169260a6923a662a",
+    "documents": 12,
+    "chunks": 67,
+    "unchanged": false,
+    "embedding": {
+      "fingerprint": "intfloat/multilingual-e5-small@fd1525a9fd15316a2d503bf26ab031a61d056e98:384:l2:query-passage-v1",
+      "indexed": true,
+      "state": "ready"
+    },
+    "embedding_cache_hits": 0,
+    "embedded_chunks": 67,
+    "latency_ms": 1182.316
+  },
+  "summary": {
+    "lexical": {
+      "queries": 12,
+      "successful_queries": 12,
+      "failed_or_degraded_queries": 0,
+      "metrics": {
+        "recall@1": 0.666667,
+        "recall@3": 0.666667,
+        "recall@5": 0.666667,
+        "mrr@5": 0.666667,
+        "ndcg@5": 0.666667
+      },
+      "latency_ms": {
+        "p50": 2.015,
+        "p95": 2.706,
+        "max": 2.706
+      }
+    },
+    "dense": {
+      "queries": 12,
+      "successful_queries": 12,
+      "failed_or_degraded_queries": 0,
+      "metrics": {
+        "recall@1": 0.666667,
+        "recall@3": 0.75,
+        "recall@5": 1.0,
+        "mrr@5": 0.758333,
+        "ndcg@5": 0.815957
+      },
+      "latency_ms": {
+        "p50": 31.616,
+        "p95": 39.814,
+        "max": 39.814
+      }
+    },
+    "hybrid": {
+      "queries": 12,
+      "successful_queries": 12,
+      "failed_or_degraded_queries": 0,
+      "metrics": {
+        "recall@1": 0.666667,
+        "recall@3": 0.75,
+        "recall@5": 1.0,
+        "mrr@5": 0.758333,
+        "ndcg@5": 0.815957
+      },
+      "latency_ms": {
+        "p50": 32.068,
+        "p95": 37.96,
+        "max": 37.96
+      }
+    }
+  },
+  "by_query_kind": {
+    "chinese_paraphrase": {
+      "lexical": {
+        "queries": 4,
+        "successful_queries": 4,
+        "failed_or_degraded_queries": 0,
+        "metrics": {
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "mrr@5": 0.0,
+          "ndcg@5": 0.0
+        },
+        "latency_ms": {
+          "p50": 2.167,
+          "p95": 2.574,
+          "max": 2.574
+        }
+      },
+      "dense": {
+        "queries": 4,
+        "successful_queries": 4,
+        "failed_or_degraded_queries": 0,
+        "metrics": {
+          "recall@1": 0.0,
+          "recall@3": 0.25,
+          "recall@5": 1.0,
+          "mrr@5": 0.275,
+          "ndcg@5": 0.447872
+        },
+        "latency_ms": {
+          "p50": 35.041,
+          "p95": 37.609,
+          "max": 37.609
+        }
+      },
+      "hybrid": {
+        "queries": 4,
+        "successful_queries": 4,
+        "failed_or_degraded_queries": 0,
+        "metrics": {
+          "recall@1": 0.0,
+          "recall@3": 0.25,
+          "recall@5": 1.0,
+          "mrr@5": 0.275,
+          "ndcg@5": 0.447872
+        },
+        "latency_ms": {
+          "p50": 34.912,
+          "p95": 37.96,
+          "max": 37.96
+        }
+      }
+    },
+    "english_paraphrase": {
+      "lexical": {
+        "queries": 4,
+        "successful_queries": 4,
+        "failed_or_degraded_queries": 0,
+        "metrics": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr@5": 1.0,
+          "ndcg@5": 1.0
+        },
+        "latency_ms": {
+          "p50": 1.959,
+          "p95": 2.021,
+          "max": 2.021
+        }
+      },
+      "dense": {
+        "queries": 4,
+        "successful_queries": 4,
+        "failed_or_degraded_queries": 0,
+        "metrics": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr@5": 1.0,
+          "ndcg@5": 1.0
+        },
+        "latency_ms": {
+          "p50": 28.675,
+          "p95": 34.228,
+          "max": 34.228
+        }
+      },
+      "hybrid": {
+        "queries": 4,
+        "successful_queries": 4,
+        "failed_or_degraded_queries": 0,
+        "metrics": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr@5": 1.0,
+          "ndcg@5": 1.0
+        },
+        "latency_ms": {
+          "p50": 28.387,
+          "p95": 32.397,
+          "max": 32.397
+        }
+      }
+    },
+    "exact_identifier": {
+      "lexical": {
+        "queries": 4,
+        "successful_queries": 4,
+        "failed_or_degraded_queries": 0,
+        "metrics": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr@5": 1.0,
+          "ndcg@5": 1.0
+        },
+        "latency_ms": {
+          "p50": 2.246,
+          "p95": 2.706,
+          "max": 2.706
+        }
+      },
+      "dense": {
+        "queries": 4,
+        "successful_queries": 4,
+        "failed_or_degraded_queries": 0,
+        "metrics": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr@5": 1.0,
+          "ndcg@5": 1.0
+        },
+        "latency_ms": {
+          "p50": 31.213,
+          "p95": 39.814,
+          "max": 39.814
+        }
+      },
+      "hybrid": {
+        "queries": 4,
+        "successful_queries": 4,
+        "failed_or_degraded_queries": 0,
+        "metrics": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr@5": 1.0,
+          "ndcg@5": 1.0
+        },
+        "latency_ms": {
+          "p50": 31.739,
+          "p95": 34.202,
+          "max": 34.202
+        }
+      }
+    }
+  },
+  "failures": [],
+  "results": [
+    {
+      "query_id": "dev-01",
+      "kind": "exact_identifier",
+      "query": "EADDRINUSE after startup; health still returns HTTP 200",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 2.493,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/port-ownership.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-4323c30f6b3cd5da1b75e4f702829bfa",
+          "path": "docs/port-ownership.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "path": "docs/readiness-business.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-87f2b3cd9c96e3117653537559b8d36c",
+          "path": "docs/port-ownership.md",
+          "line_start": 1,
+          "line_end": 2
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-7fac67c24bb5ead63ed311b1d449befb",
+          "path": "docs/readiness-business.md",
+          "line_start": 1,
+          "line_end": 2
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "path": "docs/durable-storage.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-4323c30f6b3cd5da1b75e4f702829bfa",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 9.386669115770756
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.736629331354559
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-87f2b3cd9c96e3117653537559b8d36c",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.362739213041258
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-7fac67c24bb5ead63ed311b1d449befb",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.072924869710316
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.051885814585621
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-01",
+      "kind": "exact_identifier",
+      "query": "EADDRINUSE after startup; health still returns HTTP 200",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 30.621,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/port-ownership.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-4323c30f6b3cd5da1b75e4f702829bfa",
+          "path": "docs/port-ownership.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "path": "docs/readiness-business.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dedd51b8cfe5a5ad6c7ccd31cd6a8e3",
+          "path": "docs/port-ownership.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "path": "docs/durable-storage.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-4323c30f6b3cd5da1b75e4f702829bfa",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 9.386669115770756,
+            "dense": 0.8916875507965402
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.736629331354559,
+            "dense": 0.8666209437407408
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dedd51b8cfe5a5ad6c7ccd31cd6a8e3",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.104804105830508,
+            "dense": 0.8375208057799681
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.051885814585621,
+            "dense": 0.8252000404596466
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 3.1016237987988236,
+            "dense": 0.8226476500955633
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-01",
+      "kind": "exact_identifier",
+      "query": "EADDRINUSE after startup; health still returns HTTP 200",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 34.202,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/port-ownership.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-4323c30f6b3cd5da1b75e4f702829bfa",
+          "path": "docs/port-ownership.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "path": "docs/readiness-business.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dedd51b8cfe5a5ad6c7ccd31cd6a8e3",
+          "path": "docs/port-ownership.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "path": "docs/durable-storage.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-4323c30f6b3cd5da1b75e4f702829bfa",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.03278688524590164,
+            "lexical": 9.386669115770756,
+            "dense": 0.8916875507965402
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.03225806451612903,
+            "lexical": 7.736629331354559,
+            "dense": 0.8666209437407408
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dedd51b8cfe5a5ad6c7ccd31cd6a8e3",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.03149801587301587,
+            "lexical": 4.104804105830508,
+            "dense": 0.8375208057799681
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.030776515151515152,
+            "lexical": 4.051885814585621,
+            "dense": 0.8252000404596466
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.02964426877470356,
+            "lexical": 3.1016237987988236,
+            "dense": 0.8226476500955633
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-02",
+      "kind": "exact_identifier",
+      "query": "ConnectionAcquireTimeout pool_active reaches pool_limit, SQL time normal",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 2.706,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/connection-pool.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "path": "docs/connection-pool.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c6554c261a8378d489b78c989fe02adb",
+          "path": "docs/connection-pool.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "path": "docs/slow-consumers.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dbfa8d40539df04ab4c13d6b03c5a42",
+          "path": "docs/admission-queue.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "path": "docs/admission-queue.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 15.198567702641537
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c6554c261a8378d489b78c989fe02adb",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 9.034513564642822
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 8.525884714244613
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dbfa8d40539df04ab4c13d6b03c5a42",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 5.657613474623402
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 5.212633605624923
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-02",
+      "kind": "exact_identifier",
+      "query": "ConnectionAcquireTimeout pool_active reaches pool_limit, SQL time normal",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 31.054,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/connection-pool.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "path": "docs/connection-pool.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "path": "docs/admission-queue.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c0da4e90646d5cb6cc38e1ec77f8b569",
+          "path": "docs/connection-pool.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-9556e42d7e12b3daddc19128f0c72be8",
+          "path": "docs/admission-queue.md",
+          "line_start": 5,
+          "line_end": 6
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 15.198567702641537,
+            "dense": 0.9146745777546452
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 5.212633605624923,
+            "dense": 0.8630816870460232
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c0da4e90646d5cb6cc38e1ec77f8b569",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 3.301136691134277,
+            "dense": 0.8589739565098112
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-9556e42d7e12b3daddc19128f0c72be8",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 3.0858124138783416,
+            "dense": 0.8528618285608884
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8388582090358756
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-02",
+      "kind": "exact_identifier",
+      "query": "ConnectionAcquireTimeout pool_active reaches pool_limit, SQL time normal",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 29.15,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/connection-pool.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "path": "docs/connection-pool.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c6554c261a8378d489b78c989fe02adb",
+          "path": "docs/connection-pool.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "path": "docs/admission-queue.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "path": "docs/slow-consumers.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-9556e42d7e12b3daddc19128f0c72be8",
+          "path": "docs/admission-queue.md",
+          "line_start": 5,
+          "line_end": 6
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.03278688524590164,
+            "lexical": 15.198567702641537,
+            "dense": 0.9146745777546452
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c6554c261a8378d489b78c989fe02adb",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0315136476426799,
+            "lexical": 9.034513564642822,
+            "dense": 0.8560304282085367
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.03128054740957967,
+            "lexical": 5.212633605624923,
+            "dense": 0.8630816870460232
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.02976190476190476,
+            "lexical": 8.525884714244613,
+            "dense": 0.8363334026938543
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-9556e42d7e12b3daddc19128f0c72be8",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.02900988017658188,
+            "lexical": 3.0858124138783416,
+            "dense": 0.8528618285608884
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-03",
+      "kind": "exact_identifier",
+      "query": "cache_enabled=false and zero cache hits, is Redis outage the cause?",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 1.999,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/cache-mode.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-c82007ca726394096788134cf38630be",
+          "path": "docs/cache-mode.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "path": "docs/cache-mode.md",
+          "line_start": 1,
+          "line_end": 2
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "path": "docs/deployment-comparison.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "path": "docs/retry-amplification.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "path": "docs/slow-consumers.md",
+          "line_start": 3,
+          "line_end": 4
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-c82007ca726394096788134cf38630be",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 21.13257247401776
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 11.074702061090852
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 6.022036086991824
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 5.92665143438839
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 5.432085969221969
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-03",
+      "kind": "exact_identifier",
+      "query": "cache_enabled=false and zero cache hits, is Redis outage the cause?",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 31.373,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/cache-mode.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-c82007ca726394096788134cf38630be",
+          "path": "docs/cache-mode.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "path": "docs/cache-mode.md",
+          "line_start": 1,
+          "line_end": 2
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "path": "docs/retry-amplification.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-c82007ca726394096788134cf38630be",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 21.13257247401776,
+            "dense": 0.9043071148810683
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 11.074702061090852,
+            "dense": 0.8559951497207577
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 5.92665143438839,
+            "dense": 0.8516769830476184
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 2.7109180560475807,
+            "dense": 0.8484205516545503
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 0.7673958928356334,
+            "dense": 0.8464248859368446
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-03",
+      "kind": "exact_identifier",
+      "query": "cache_enabled=false and zero cache hits, is Redis outage the cause?",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 30.059,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/cache-mode.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-c82007ca726394096788134cf38630be",
+          "path": "docs/cache-mode.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "path": "docs/cache-mode.md",
+          "line_start": 1,
+          "line_end": 2
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "path": "docs/retry-amplification.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "path": "docs/deployment-comparison.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-b737c5cfb62ddbfa9b041042147eca9f",
+          "path": "docs/counter-resets.md",
+          "line_start": 3,
+          "line_end": 4
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-c82007ca726394096788134cf38630be",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.03278688524590164,
+            "lexical": 21.13257247401776,
+            "dense": 0.9043071148810683
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.03225806451612903,
+            "lexical": 11.074702061090852,
+            "dense": 0.8559951497207577
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.03125763125763126,
+            "lexical": 5.92665143438839,
+            "dense": 0.8516769830476184
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.030776515151515152,
+            "lexical": 6.022036086991824,
+            "dense": 0.845881823834102
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-b737c5cfb62ddbfa9b041042147eca9f",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.02817460317460317,
+            "lexical": 4.427930780642902,
+            "dense": 0.8381245415236971
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-04",
+      "kind": "exact_identifier",
+      "query": "request_total decreases after process_start_time_seconds changes",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 1.841,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/counter-resets.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-b737c5cfb62ddbfa9b041042147eca9f",
+          "path": "docs/counter-resets.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "path": "docs/slow-consumers.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c73ddee6073460df033fb65b3282d8d6",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "path": "docs/connection-pool.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-b737c5cfb62ddbfa9b041042147eca9f",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 14.867845716820415
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.97452348282524
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.637642963267256
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c73ddee6073460df033fb65b3282d8d6",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.56161388594237
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.18622600251541
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-04",
+      "kind": "exact_identifier",
+      "query": "request_total decreases after process_start_time_seconds changes",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 39.814,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/counter-resets.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-b737c5cfb62ddbfa9b041042147eca9f",
+          "path": "docs/counter-resets.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "path": "docs/slow-consumers.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "path": "docs/connection-pool.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-b737c5cfb62ddbfa9b041042147eca9f",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 14.867845716820415,
+            "dense": 0.8727172680298069
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.637642963267256,
+            "dense": 0.8493116103831293
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.18622600251541,
+            "dense": 0.8470148252201202
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.97452348282524,
+            "dense": 0.8465479368339455
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.0278323369352975,
+            "dense": 0.8460670199713655
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-04",
+      "kind": "exact_identifier",
+      "query": "request_total decreases after process_start_time_seconds changes",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 33.418,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/counter-resets.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-b737c5cfb62ddbfa9b041042147eca9f",
+          "path": "docs/counter-resets.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "path": "docs/slow-consumers.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "path": "docs/connection-pool.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-b737c5cfb62ddbfa9b041042147eca9f",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.03278688524590164,
+            "lexical": 14.867845716820415,
+            "dense": 0.8727172680298069
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.03200204813108039,
+            "lexical": 7.637642963267256,
+            "dense": 0.8493116103831293
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.031754032258064516,
+            "lexical": 7.97452348282524,
+            "dense": 0.8465479368339455
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-41dda22e41a4788f1ccf405092c5283c",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.03125763125763126,
+            "lexical": 7.18622600251541,
+            "dense": 0.8470148252201202
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.029877369007803793,
+            "lexical": 4.0278323369352975,
+            "dense": 0.8460670199713655
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-05",
+      "kind": "english_paraphrase",
+      "query": "The process answers its liveness check but the graph result is wrong. What verification is missing?",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 1.915,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/readiness-business.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "path": "docs/readiness-business.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-549b1e1d889901eb67c13725b476f2c3",
+          "path": "docs/port-ownership.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-66d7b8cb601b5b9dc9f1c703ca94f52f",
+          "path": "docs/port-ownership.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-188fff3e112f3de2315bbb8f0dd5dcae",
+          "path": "docs/deployment-comparison.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-b79f9d1d3421480b81eb8c998f4ab46b",
+          "path": "docs/cache-mode.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 10.346794134950354
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-549b1e1d889901eb67c13725b476f2c3",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.658185046077676
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-66d7b8cb601b5b9dc9f1c703ca94f52f",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.592951846446812
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-188fff3e112f3de2315bbb8f0dd5dcae",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 6.6375417168863935
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-b79f9d1d3421480b81eb8c998f4ab46b",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 5.6978848330874
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-05",
+      "kind": "english_paraphrase",
+      "query": "The process answers its liveness check but the graph result is wrong. What verification is missing?",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 30.557,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/readiness-business.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "path": "docs/readiness-business.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-42d93913324c052b43c0b85e6519b1e7",
+          "path": "docs/counter-resets.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "path": "docs/durable-storage.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-1512bd7446232a35b2d2d275120a7ac2",
+          "path": "docs/readiness-business.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "path": "docs/memory-accounting.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 10.346794134950354,
+            "dense": 0.8626182927130872
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-42d93913324c052b43c0b85e6519b1e7",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.262992950976181,
+            "dense": 0.8349069784919284
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 3.9534887623048536,
+            "dense": 0.8317388703088396
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-1512bd7446232a35b2d2d275120a7ac2",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 2.776501813860741,
+            "dense": 0.831299769235497
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.210312307539248,
+            "dense": 0.8262189424495759
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-05",
+      "kind": "english_paraphrase",
+      "query": "The process answers its liveness check but the graph result is wrong. What verification is missing?",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 25.111,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/readiness-business.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "path": "docs/readiness-business.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-42d93913324c052b43c0b85e6519b1e7",
+          "path": "docs/counter-resets.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-66d7b8cb601b5b9dc9f1c703ca94f52f",
+          "path": "docs/port-ownership.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-549b1e1d889901eb67c13725b476f2c3",
+          "path": "docs/port-ownership.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "path": "docs/memory-accounting.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-84957165580840e2bc76cb7c6be45035",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.03278688524590164,
+            "lexical": 10.346794134950354,
+            "dense": 0.8626182927130872
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-42d93913324c052b43c0b85e6519b1e7",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.031054405392392875,
+            "lexical": 4.262992950976181,
+            "dense": 0.8349069784919284
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-66d7b8cb601b5b9dc9f1c703ca94f52f",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.031024531024531024,
+            "lexical": 7.592951846446812,
+            "dense": 0.8262026170905454
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-549b1e1d889901eb67c13725b476f2c3",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.030834914611005692,
+            "lexical": 7.658185046077676,
+            "dense": 0.8199809869776312
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.029877369007803793,
+            "lexical": 4.210312307539248,
+            "dense": 0.8262189424495759
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-06",
+      "kind": "english_paraphrase",
+      "query": "User traffic is unchanged but every logical request now causes many attempts and overload spreads.",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 1.908,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/retry-amplification.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-c73ddee6073460df033fb65b3282d8d6",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "path": "docs/retry-amplification.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-188fff3e112f3de2315bbb8f0dd5dcae",
+          "path": "docs/deployment-comparison.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c6554c261a8378d489b78c989fe02adb",
+          "path": "docs/connection-pool.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dbfa8d40539df04ab4c13d6b03c5a42",
+          "path": "docs/admission-queue.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-c73ddee6073460df033fb65b3282d8d6",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 14.396894506580384
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 12.368946339106177
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-188fff3e112f3de2315bbb8f0dd5dcae",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.32384655113686
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c6554c261a8378d489b78c989fe02adb",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.559612501419275
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dbfa8d40539df04ab4c13d6b03c5a42",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.414763994870404
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-06",
+      "kind": "english_paraphrase",
+      "query": "User traffic is unchanged but every logical request now causes many attempts and overload spreads.",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 25.08,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/retry-amplification.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "path": "docs/retry-amplification.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c73ddee6073460df033fb65b3282d8d6",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "path": "docs/admission-queue.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c0da4e90646d5cb6cc38e1ec77f8b569",
+          "path": "docs/connection-pool.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 12.368946339106177,
+            "dense": 0.8621938434083846
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c73ddee6073460df033fb65b3282d8d6",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 14.396894506580384,
+            "dense": 0.8271527470120116
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 0.9697339126624643,
+            "dense": 0.8247350721550706
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 0.6510565532052406,
+            "dense": 0.8202015328778766
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c0da4e90646d5cb6cc38e1ec77f8b569",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 1.3914102355918583,
+            "dense": 0.8130249586435665
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-06",
+      "kind": "english_paraphrase",
+      "query": "User traffic is unchanged but every logical request now causes many attempts and overload spreads.",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 26.721,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/retry-amplification.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "path": "docs/retry-amplification.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c73ddee6073460df033fb65b3282d8d6",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-188fff3e112f3de2315bbb8f0dd5dcae",
+          "path": "docs/deployment-comparison.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "path": "docs/slow-consumers.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.03252247488101534,
+            "lexical": 12.368946339106177,
+            "dense": 0.8621938434083846
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-c73ddee6073460df033fb65b3282d8d6",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.03252247488101534,
+            "lexical": 14.396894506580384,
+            "dense": 0.8271527470120116
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-188fff3e112f3de2315bbb8f0dd5dcae",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.029206349206349208,
+            "lexical": 7.32384655113686,
+            "dense": 0.7976613354011352
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a90b513c4a20f1c98195a35485719fb4",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.028991596638655463,
+            "lexical": 3.3768294975131687,
+            "dense": 0.8108664412514113
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.028370221327967807,
+            "lexical": 3.2896378231896906,
+            "dense": 0.8061498958498592
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-07",
+      "kind": "english_paraphrase",
+      "query": "A display reports huge memory usage. Could it be allocated capacity or the wrong unit rather than resident pages?",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 2.003,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/memory-accounting.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "path": "docs/memory-accounting.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f3f830fe6e4c2340ee7f2f360b050bbb",
+          "path": "docs/connection-pool.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-04e61deead8ee6744b102ddd5615ba38",
+          "path": "docs/memory-accounting.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "path": "docs/slow-consumers.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-1512bd7446232a35b2d2d275120a7ac2",
+          "path": "docs/readiness-business.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 22.63431158248513
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f3f830fe6e4c2340ee7f2f360b050bbb",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.795488487016058
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-04e61deead8ee6744b102ddd5615ba38",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 7.0008007025343435
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 6.680030797647683
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-1512bd7446232a35b2d2d275120a7ac2",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 6.291484024521217
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-07",
+      "kind": "english_paraphrase",
+      "query": "A display reports huge memory usage. Could it be allocated capacity or the wrong unit rather than resident pages?",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 26.793,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/memory-accounting.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "path": "docs/memory-accounting.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3f1ec7c830ac06189f3c0f7d52ad59c8",
+          "path": "docs/memory-accounting.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "path": "docs/durable-storage.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "path": "docs/durable-storage.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 22.63431158248513,
+            "dense": 0.8969701743259448
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3f1ec7c830ac06189f3c0f7d52ad59c8",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.220616996535152,
+            "dense": 0.859825547734429
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 3.0757203589608526,
+            "dense": 0.8314883204667699
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 0.9491014678298682,
+            "dense": 0.8303605300576589
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 5.0943597286329165,
+            "dense": 0.8298070836002229
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-07",
+      "kind": "english_paraphrase",
+      "query": "A display reports huge memory usage. Could it be allocated capacity or the wrong unit rather than resident pages?",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 30.053,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/memory-accounting.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "path": "docs/memory-accounting.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-04e61deead8ee6744b102ddd5615ba38",
+          "path": "docs/memory-accounting.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "path": "docs/durable-storage.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "path": "docs/slow-consumers.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "path": "docs/durable-storage.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-290c3244a9b1f5135feefa42d23a929b",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.03278688524590164,
+            "lexical": 22.63431158248513,
+            "dense": 0.8969701743259448
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-04e61deead8ee6744b102ddd5615ba38",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.031746031746031744,
+            "lexical": 7.0008007025343435,
+            "dense": 0.8403391698607199
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.02964426877470356,
+            "lexical": 5.0943597286329165,
+            "dense": 0.8298070836002229
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.028958333333333336,
+            "lexical": 6.680030797647683,
+            "dense": 0.8205345778952413
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.028125,
+            "lexical": 3.0757203589608526,
+            "dense": 0.8314883204667699
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-08",
+      "kind": "english_paraphrase",
+      "query": "Writes stall while free disk capacity disappears. What evidence should be collected before touching persistent files?",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 2.021,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/durable-storage.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "path": "docs/durable-storage.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "path": "docs/slow-consumers.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "path": "docs/durable-storage.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dbfa8d40539df04ab4c13d6b03c5a42",
+          "path": "docs/admission-queue.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 11.941107785258609
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 10.683041445048584
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 9.167633221151391
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-6dbfa8d40539df04ab4c13d6b03c5a42",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 5.765669922084566
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.9220599298105006
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-08",
+      "kind": "english_paraphrase",
+      "query": "Writes stall while free disk capacity disappears. What evidence should be collected before touching persistent files?",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 34.228,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/durable-storage.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "path": "docs/durable-storage.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "path": "docs/durable-storage.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-66d7b8cb601b5b9dc9f1c703ca94f52f",
+          "path": "docs/port-ownership.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "path": "docs/slow-consumers.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "path": "docs/deployment-comparison.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 11.941107785258609,
+            "dense": 0.8679608503545276
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 9.167633221151391,
+            "dense": 0.8654172911043717
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-66d7b8cb601b5b9dc9f1c703ca94f52f",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 4.807148561408639,
+            "dense": 0.8479695245476867
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 10.683041445048584,
+            "dense": 0.83991915922394
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "lexical": 2.8208785153963065,
+            "dense": 0.8283944946813735
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-08",
+      "kind": "english_paraphrase",
+      "query": "Writes stall while free disk capacity disappears. What evidence should be collected before touching persistent files?",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 32.397,
+      "error": null,
+      "metrics": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 1.0,
+        "ndcg@5": 1.0
+      },
+      "relevance": {
+        "docs/durable-storage.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "path": "docs/durable-storage.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "path": "docs/durable-storage.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "path": "docs/slow-consumers.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-66d7b8cb601b5b9dc9f1c703ca94f52f",
+          "path": "docs/port-ownership.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "path": "docs/deployment-comparison.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-57ec72283322d0e0748c9df4ef5da3fd",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.03278688524590164,
+            "lexical": 11.941107785258609,
+            "dense": 0.8679608503545276
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-efc2b3720260121d14983969f59ab33b",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.03200204813108039,
+            "lexical": 9.167633221151391,
+            "dense": 0.8654172911043717
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.031754032258064516,
+            "lexical": 10.683041445048584,
+            "dense": 0.83991915922394
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-66d7b8cb601b5b9dc9f1c703ca94f52f",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.031024531024531024,
+            "lexical": 4.807148561408639,
+            "dense": 0.8479695245476867
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.029083245521601686,
+            "lexical": 2.8208785153963065,
+            "dense": 0.8283944946813735
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-09",
+      "kind": "chinese_paraphrase",
+      "query": "计算已经很快完成，但调用方迟迟不接收返回结果，连接和发送缓冲一直占用，应该看什么？",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 2.24,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "mrr@5": 0.0,
+        "ndcg@5": 0.0
+      },
+      "relevance": {
+        "docs/slow-consumers.md": 2
+      },
+      "hits": [],
+      "ranking": []
+    },
+    {
+      "query_id": "dev-09",
+      "kind": "chinese_paraphrase",
+      "query": "计算已经很快完成，但调用方迟迟不接收返回结果，连接和发送缓冲一直占用，应该看什么？",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 37.609,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "mrr@5": 0.2,
+        "ndcg@5": 0.38685280723454163
+      },
+      "relevance": {
+        "docs/slow-consumers.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "path": "docs/admission-queue.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "path": "docs/slow-consumers.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8457312079955832
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8387143018526589
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8383308977450126
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8357821071997685
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8343182776392969
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-09",
+      "kind": "chinese_paraphrase",
+      "query": "计算已经很快完成，但调用方迟迟不接收返回结果，连接和发送缓冲一直占用，应该看什么？",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 37.96,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "mrr@5": 0.2,
+        "ndcg@5": 0.38685280723454163
+      },
+      "relevance": {
+        "docs/slow-consumers.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "path": "docs/admission-queue.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "path": "docs/slow-consumers.md",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.01639344262295082,
+            "dense": 0.8457312079955832
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.016129032258064516,
+            "dense": 0.8387143018526589
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.015873015873015872,
+            "dense": 0.8383308977450126
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5d66166aaf9a90e3e7d19379036d7593",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.015625,
+            "dense": 0.8357821071997685
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-4f199b8f5efc1efc95c4849097d7cd04",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.015384615384615385,
+            "dense": 0.8343182776392969
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-10",
+      "kind": "chinese_paraphrase",
+      "query": "任务还没开始执行就在入口排队，工作线程全满，直接扩大等待队列真的能提高吞吐吗？",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 2.094,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "mrr@5": 0.0,
+        "ndcg@5": 0.0
+      },
+      "relevance": {
+        "docs/admission-queue.md": 2
+      },
+      "hits": [],
+      "ranking": []
+    },
+    {
+      "query_id": "dev-10",
+      "kind": "chinese_paraphrase",
+      "query": "任务还没开始执行就在入口排队，工作线程全满，直接扩大等待队列真的能提高吞吐吗？",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 35.172,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "mrr@5": 0.2,
+        "ndcg@5": 0.38685280723454163
+      },
+      "relevance": {
+        "docs/admission-queue.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "path": "docs/cache-mode.md",
+          "line_start": 1,
+          "line_end": 2
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "path": "docs/retry-amplification.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-858020429615ac3b8b7ebe556a2a7966",
+          "path": "docs/admission-queue.md",
+          "line_start": 3,
+          "line_end": 4
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8229754790955041
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8212940366145378
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8206348391291391
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8196804746746578
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-858020429615ac3b8b7ebe556a2a7966",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8192888490056335
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-10",
+      "kind": "chinese_paraphrase",
+      "query": "任务还没开始执行就在入口排队，工作线程全满，直接扩大等待队列真的能提高吞吐吗？",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 33.498,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "mrr@5": 0.2,
+        "ndcg@5": 0.38685280723454163
+      },
+      "relevance": {
+        "docs/admission-queue.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "path": "docs/cache-mode.md",
+          "line_start": 1,
+          "line_end": 2
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "path": "docs/retry-amplification.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-858020429615ac3b8b7ebe556a2a7966",
+          "path": "docs/admission-queue.md",
+          "line_start": 3,
+          "line_end": 4
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.01639344262295082,
+            "dense": 0.8229754790955041
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.016129032258064516,
+            "dense": 0.8212940366145378
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a2009742b2fb1aead260f1dc4cb09258",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.015873015873015872,
+            "dense": 0.8206348391291391
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.015625,
+            "dense": 0.8196804746746578
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-858020429615ac3b8b7ebe556a2a7966",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.015384615384615385,
+            "dense": 0.8192888490056335
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-11",
+      "kind": "chinese_paraphrase",
+      "query": "第三方接口的响应先变慢，本机排队随后增加，怎样核对依赖耗时与本地等待的先后关系？",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 2.01,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "mrr@5": 0.0,
+        "ndcg@5": 0.0
+      },
+      "relevance": {
+        "docs/downstream-latency.md": 2
+      },
+      "hits": [],
+      "ranking": []
+    },
+    {
+      "query_id": "dev-11",
+      "kind": "chinese_paraphrase",
+      "query": "第三方接口的响应先变慢，本机排队随后增加，怎样核对依赖耗时与本地等待的先后关系？",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 34.91,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 0.5,
+        "ndcg@5": 0.6309297535714574
+      },
+      "relevance": {
+        "docs/downstream-latency.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f7ac96adbea08061083ce44747d3b0b7",
+          "path": "docs/cache-mode.md",
+          "line_start": 5,
+          "line_end": 6
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "path": "docs/cache-mode.md",
+          "line_start": 1,
+          "line_end": 2
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8450669919104499
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8362812756353041
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8351984281733914
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f7ac96adbea08061083ce44747d3b0b7",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8288217648524802
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8257618021349635
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-11",
+      "kind": "chinese_paraphrase",
+      "query": "第三方接口的响应先变慢，本机排队随后增加，怎样核对依赖耗时与本地等待的先后关系？",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 36.325,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr@5": 0.5,
+        "ndcg@5": 0.6309297535714574
+      },
+      "relevance": {
+        "docs/downstream-latency.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "path": "docs/retry-amplification.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 3
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f7ac96adbea08061083ce44747d3b0b7",
+          "path": "docs/cache-mode.md",
+          "line_start": 5,
+          "line_end": 6
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "path": "docs/cache-mode.md",
+          "line_start": 1,
+          "line_end": 2
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-a93427157ca6710e747c9fb84fe2f96b",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.01639344262295082,
+            "dense": 0.8450669919104499
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ad7d6cc34e8b0dd206210b17cf043e1d",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.016129032258064516,
+            "dense": 0.8362812756353041
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-647d422262eaee43e53d35388b966390",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.015873015873015872,
+            "dense": 0.8351984281733914
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f7ac96adbea08061083ce44747d3b0b7",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.015384615384615385,
+            "dense": 0.8288217648524802
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-f085a27babde8554204596641c4a9e34",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.014925373134328358,
+            "dense": 0.8257618021349635
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-12",
+      "kind": "chinese_paraphrase",
+      "query": "上线时间靠近故障时间，但代码目录里的修改未必是进程正在运行的版本，如何核实？",
+      "mode": "lexical",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "lexical",
+      "latency_ms": 2.574,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "mrr@5": 0.0,
+        "ndcg@5": 0.0
+      },
+      "relevance": {
+        "docs/deployment-comparison.md": 2
+      },
+      "hits": [],
+      "ranking": []
+    },
+    {
+      "query_id": "dev-12",
+      "kind": "chinese_paraphrase",
+      "query": "上线时间靠近故障时间，但代码目录里的修改未必是进程正在运行的版本，如何核实？",
+      "mode": "dense",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "dense",
+      "latency_ms": 31.859,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "mrr@5": 0.2,
+        "ndcg@5": 0.38685280723454163
+      },
+      "relevance": {
+        "docs/deployment-comparison.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-f7ac96adbea08061083ce44747d3b0b7",
+          "path": "docs/cache-mode.md",
+          "line_start": 5,
+          "line_end": 6
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ea1df14c51ead5c5de3e472803a33eec",
+          "path": "docs/port-ownership.md",
+          "line_start": 5,
+          "line_end": 6
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "path": "docs/deployment-comparison.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-f7ac96adbea08061083ce44747d3b0b7",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8334734091374318
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ea1df14c51ead5c5de3e472803a33eec",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8322336772803579
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8315174190192786
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8272833985385516
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.0,
+            "dense": 0.8260090741191404
+          }
+        }
+      ]
+    },
+    {
+      "query_id": "dev-12",
+      "kind": "chinese_paraphrase",
+      "query": "上线时间靠近故障时间，但代码目录里的修改未必是进程正在运行的版本，如何核实？",
+      "mode": "hybrid",
+      "valid_mode": true,
+      "status": "complete",
+      "effective_mode": "hybrid",
+      "latency_ms": 31.739,
+      "error": null,
+      "metrics": {
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "mrr@5": 0.2,
+        "ndcg@5": 0.38685280723454163
+      },
+      "relevance": {
+        "docs/deployment-comparison.md": 2
+      },
+      "hits": [
+        {
+          "id": "kn-retrieval-benchmark-v1-f7ac96adbea08061083ce44747d3b0b7",
+          "path": "docs/cache-mode.md",
+          "line_start": 5,
+          "line_end": 6
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ea1df14c51ead5c5de3e472803a33eec",
+          "path": "docs/port-ownership.md",
+          "line_start": 5,
+          "line_end": 6
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "path": "docs/downstream-latency.md",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "path": "docs/downstream-latency.md",
+          "line_start": 3,
+          "line_end": 4
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "path": "docs/deployment-comparison.md",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ],
+      "ranking": [
+        {
+          "id": "kn-retrieval-benchmark-v1-f7ac96adbea08061083ce44747d3b0b7",
+          "rank": 1,
+          "scores": {
+            "rrf": 0.01639344262295082,
+            "dense": 0.8334734091374318
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-ea1df14c51ead5c5de3e472803a33eec",
+          "rank": 2,
+          "scores": {
+            "rrf": 0.016129032258064516,
+            "dense": 0.8322336772803579
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-5bbe7dbf0ae3c5c3c9d4e6ff812fbac6",
+          "rank": 3,
+          "scores": {
+            "rrf": 0.015873015873015872,
+            "dense": 0.8315174190192786
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-3b3008acfa973ad0d3ed434fb9ae1bd4",
+          "rank": 4,
+          "scores": {
+            "rrf": 0.015625,
+            "dense": 0.8272833985385516
+          }
+        },
+        {
+          "id": "kn-retrieval-benchmark-v1-fdc32289f91714d5b47d2053e9e981df",
+          "rank": 5,
+          "scores": {
+            "rrf": 0.015384615384615385,
+            "dense": 0.8260090741191404
+          }
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Small synthetic corpus; not a production query distribution or diagnosis benchmark",
+    "Chinese paraphrases intentionally test cross-language English-document retrieval",
+    "Public holdout supports regression checks but cannot guarantee future model isolation"
+  ]
+}

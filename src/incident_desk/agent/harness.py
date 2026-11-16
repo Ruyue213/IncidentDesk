@@ -51,6 +51,16 @@ DISALLOWED_TOOLS = frozenset(
 )
 
 
+def execution_step_limit(model_calls: int, tool_calls: int) -> int:
+    """Allow middleware graph nodes without replacing the durable call budgets.
+
+    A single model/tool round includes several before/after/approval nodes. A
+    fixed graph limit can therefore stop well before the configured call budget.
+    The ledger, RuntimeGuard and active-time deadline remain the actual limits.
+    """
+    return max(128, 16 * (model_calls + 2) + 4 * tool_calls)
+
+
 class ToolAllowlistMiddleware(AgentMiddleware):
     """Refuse unapproved capabilities even if a model invents a tool call."""
 

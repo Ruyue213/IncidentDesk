@@ -1,5 +1,7 @@
 # IncidentDesk
 
+[![Engineering checks](https://github.com/Ruyue213/IncidentDesk/actions/workflows/check.yml/badge.svg)](https://github.com/Ruyue213/IncidentDesk/actions/workflows/check.yml)
+
 [简体中文](README.zh-CN.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Roadmap](ROADMAP.md)
 
 **Local-service performance and availability diagnosis with verifiable evidence and approval-gated actions.**
@@ -102,7 +104,7 @@ uv run --frozen --extra rag pytest -q
 npm test --prefix frontend
 uv build --out-dir dist
 uv export --frozen --all-extras --no-dev --no-emit-project --no-hashes --output-file dist/incidentdesk-constraints.txt
-python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
+uv run --frozen --extra rag python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
 ```
 
 The release check creates a fresh virtual environment and unrelated working directory, installs the wheel, serves its bundled UI, registers a synthetic project, completes a scripted task, and verifies stop/backup/restore. It does not call a provider or touch an existing service. CI performs offline-model checks on Linux and macOS; paid model validation and target-specific service integration are separate, explicit checks. An unexecuted CI workflow is not evidence that a platform passed.

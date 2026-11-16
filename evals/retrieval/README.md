@@ -15,7 +15,23 @@ All three modes use the same redacted chunks, generation, filters, document-dive
 
 An absent local model produces an explicit degraded lexical result. `--require-dense` fails the run if genuine local dense inference did not execute; degraded results never count as a successful dense comparison. No model download, cloud LLM request or business process action happens during evaluation. Results are a small synthetic capability test, not end-to-end diagnosis accuracy, proof of root causes or a production service-level objective.
 
-The **early implementation** local E5 run is recorded in [baseline-v1.json](baseline-v1.json), with dataset, code and dependency hashes. Its recorded Git commit belongs to private development history and cannot be resolved in the clean public repository. The per-file hashes identify the actual evaluated files; this report predates subsequent indexing-concurrency and UI fixes and is not validation of final release code. A final-code regression must use the same frozen inputs and write a separate report without replacing these original measurements. No labels or retrieval parameters were changed after holdout inspection. The frozen corpus produced 67 chunks.
+## Final-code regression
+
+The v0.3 code was evaluated from public source commit `9a054f93df305554a1a4b2567a610b38c40033ca`, with actual imports verified to use that source tree. Complete [development](regression-v0.3-development.json) and [holdout](regression-v0.3-holdout.json) reports retain code hashes, dependency versions, model revision, per-query rankings, failures, timings and metrics. Their evaluated retrieval-file hashes were checked against that source tree before publication. These are new runs over the unchanged frozen corpus and queries, not revised early measurements.
+
+| Final-code holdout, 12 queries | Recall@5 | MRR@5 | nDCG@5 | Warm-query p95 |
+| --- | ---: | ---: | ---: | ---: |
+| Lexical | 0.6667 | 0.6667 | 0.6667 | 6.21 ms |
+| Dense | 0.9167 | 0.8333 | 0.8552 | 34.10 ms |
+| Hybrid | 0.9167 | 0.8750 | 0.8859 | 32.89 ms |
+
+All 72 mode/query executions across both splits completed without failure or degradation. Quality metrics match the early run: development Recall@5 is 0.6667 for lexical and 1.0 for dense/hybrid; holdout hybrid retrieves the relevant document within five chunk slots for 11 of 12 queries. The Chinese business-correctness query (`holdout-09`) is still missed. The generation contains 67 chunks. Model loading/warmup took 7.66 seconds for development and 6.68 seconds for holdout; indexing took 1.18 and 1.19 seconds. Warm-query latency excludes both costs and varies between runs; these values are not a production latency guarantee.
+
+No labels, chunking or fusion parameters were adjusted after inspecting the earlier holdout. Because these queries had already been inspected, this is a final-code **regression**, not a new unseen acceptance set or an estimate of production diagnosis accuracy. No cloud model was called and no real project was accessed. The early report below remains unchanged.
+
+## Early implementation record
+
+The **early implementation** local E5 run is recorded in [baseline-v1.json](baseline-v1.json), with dataset, code and dependency hashes. Its recorded Git commit belongs to private development history and cannot be resolved in the clean public repository. The per-file hashes identify the actual evaluated files; this report predates subsequent indexing-concurrency and UI fixes and is not validation of final release code. The final-code regression above uses the same frozen inputs and separate reports without replacing these original measurements. No labels or retrieval parameters were changed after holdout inspection. The frozen corpus produced 67 chunks.
 
 | Early holdout, 12 queries | Recall@5 | MRR@5 | nDCG@5 | Warm-query p95 |
 | --- | ---: | ---: | ---: | ---: |

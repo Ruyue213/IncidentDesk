@@ -14,7 +14,7 @@ from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
 
 from incident_desk.agent.budget import BudgetExceeded
-from incident_desk.agent.harness import build_harness
+from incident_desk.agent.harness import build_harness, execution_step_limit
 from incident_desk.agent.models import make_model
 from incident_desk.agent.offline import EvidenceQuery
 from incident_desk.knowledge.store import KnowledgeStore
@@ -64,6 +64,8 @@ class SessionLimit(AgentMiddleware):
             raise BudgetExceeded("tool call count limit reached before next model request")
         if self.model_limit is not None and self.session.model_calls >= self.model_limit:
             raise BudgetExceeded("fixed baseline permits exactly one model generation")
+        if self.session.model_calls >= self.session.settings.model_call_limit:
+            raise BudgetExceeded("model call count limit reached")
         self.session.model_calls += 1
 
     async def aafter_model(self, state, runtime):
@@ -439,6 +441,12 @@ class DiagnosticSession:
             else None,
             system_prompt=self.system_prompt(),
             virtual_files=self.request.mode != "live",
+        ).with_config(
+            {
+                "recursion_limit": execution_step_limit(
+                    self.settings.model_call_limit, self.settings.tool_call_limit
+                )
+            }
         )
 
     def system_prompt(self):

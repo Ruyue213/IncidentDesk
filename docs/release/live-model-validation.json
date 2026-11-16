@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "scope": "Single real-service read-only cloud-agent integration smoke; not diagnosis accuracy or remediation validation",
+  "scope": "Real-service cloud-agent integration: initial availability smoke, failed stopped-service investigation and post-fix follow-up; not representative diagnosis accuracy",
   "model_returned_ids": [
     "deepseek-flash"
   ],
@@ -20,9 +20,37 @@
   "private_result_sha256": "165f6d6339ea7e3b8b2bbcb7ec1799a6394769e3f40b8b591b39b68f67ed228b",
   "private_data_distributed": false,
   "limitations": [
-    "One availability smoke, no representative labeled incident set",
+    "Two selected availability situations and one retained failure, no representative labeled incident set",
     "Historical coverage was incomplete and the report acknowledged the missing baseline",
     "Retrieved runbooks are guidance, not runtime facts",
     "No private source, logs, run identifier, process identifier, paths or source quotes are published"
+  ],
+  "additional_attempts": [
+    {
+      "outcome": "FAILED",
+      "error_type": "GraphRecursionError",
+      "model_calls": 7,
+      "tool_calls": 12,
+      "report_repairs": 0,
+      "validated_quote_references": 0,
+      "service_actions_proposed": false,
+      "known_estimated_cost_cny": 0.04869224,
+      "private_result_sha256": "31ccf32f10e50b990bf37e2d7b5c3de8cbb0f0798e776abe442ddcc2c23e5946",
+      "scenario": "current_target_unavailable_before_step_limit_fix",
+      "interpretation": "Fixed graph-step cap interrupted investigation below the configured model-call budget; original failed task retained"
+    },
+    {
+      "outcome": "SUCCEEDED",
+      "error_type": null,
+      "model_calls": 5,
+      "tool_calls": 13,
+      "report_repairs": 0,
+      "validated_quote_references": 6,
+      "service_actions_proposed": false,
+      "known_estimated_cost_cny": 0.05349376,
+      "private_result_sha256": "37324026a94a1461f6b403048ae2224afbc9bb0260c411cbb827585fe78299c7",
+      "scenario": "current_target_unavailable_followup",
+      "interpretation": "Read-only report identified unavailability and missing exit-cause evidence. Nondeterministic follow-up success alone does not prove the fix; a separate 11-model-round scripted regression validates the expanded step allowance."
+    }
   ]
 }

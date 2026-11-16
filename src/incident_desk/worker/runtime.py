@@ -17,6 +17,7 @@ from langgraph.types import Command
 
 from incident_desk.agent.budget import BudgetExceeded
 from incident_desk.agent.diagnostics import DiagnosticSession, InvalidModelOutput
+from incident_desk.agent.harness import execution_step_limit
 from incident_desk.observability import logger
 from incident_desk.schemas import RunInput, ServiceActionRequest, TicketRequest
 from incident_desk.settings import Settings
@@ -340,9 +341,12 @@ class Worker:
             await self.repository.transition(run_id, "CANCELLED")
             await self.release(run_id)
             return True
-        config = {"configurable": {"thread_id": run_id}, "recursion_limit": 50}
+        config = {"configurable": {"thread_id": run_id}}
         try:
             session, graph = await self._session(run, saver)
+            config["recursion_limit"] = execution_step_limit(
+                session.settings.model_call_limit, session.settings.tool_call_limit
+            )
             state = await graph.aget_state(config)
             await self._settle_span(run, state)
             if state.interrupts:
