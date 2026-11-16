@@ -1,0 +1,42 @@
+name: Diagnose macOS loopback startup
+on:
+  push:
+    branches: [diagnose/macos-loopback]
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    steps:
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - name: Capture synthetic HTTP startup stacks and isolated control
+        run: |
+          uv run --no-project --python 3.12 python - <<'PY'
+          import subprocess, sys
+          common = '''import faulthandler,time,sys
+          faulthandler.dump_traceback_later(5,repeat=True)
+          print('BEFORE_IMPORT',flush=True)
+          from http.server import HTTPServer,BaseHTTPRequestHandler
+          import socket
+          print('AFTER_IMPORT',flush=True)
+          '''
+          suffix = '''
+          print('BEFORE_SERVER',flush=True)
+          started=time.monotonic()
+          server=HTTPServer(('127.0.0.1',0),BaseHTTPRequestHandler)
+          print('SERVER_CONSTRUCTED',round(time.monotonic()-started,3),flush=True)
+          server.server_close()
+          faulthandler.cancel_dump_traceback_later()
+          '''
+          print('INTERPRETER',sys.executable,flush=True)
+          for name, control in [('unmodified', ''), ('no_reverse_dns_control', "socket.getfqdn=lambda name='': name or 'localhost'\n")]:
+              print('CASE',name,flush=True)
+              try:
+                  r=subprocess.run([sys.executable,'-u','-c',common+control+suffix],capture_output=True,text=True,timeout=24)
+                  print('EXIT',r.returncode); print(r.stdout); print(r.stderr)
+              except subprocess.TimeoutExpired as e:
+                  print('TIMEOUT'); print(e.stdout.decode() if isinstance(e.stdout,bytes) else e.stdout); print(e.stderr.decode() if isinstance(e.stderr,bytes) else e.stderr)
+          PY
