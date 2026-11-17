@@ -2,10 +2,12 @@
 
 import json
 import shutil
+import signal
 import socket
 import sys
 import urllib.request
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -140,3 +142,36 @@ def test_unproven_start_cleanup_keeps_gate_and_rejects_another_start_or_stop(
     assert service.STATE.read_bytes() == state
     assert len(launch["children"]) == 2
     assert all(child.poll() is None for child in launch["children"].values())
+
+
+@pytest.mark.parametrize("eventually_exits", [True, False])
+def test_stop_observes_exit_without_signalling_again(tmp_path, monkeypatch, eventually_exits):
+    state_path = tmp_path / "processes.json"
+    state = {"phase": "READY", "worker": 2147483000, "identities": {"worker": "original"}}
+    state_path.write_text(json.dumps(state))
+    monkeypatch.setattr(service, "STATE", state_path)
+    signals, observations = [], []
+    monkeypatch.setattr(service, "alive", lambda *_: not signals)
+    monkeypatch.setattr(service.os, "kill", lambda pid, sig: signals.append((pid, sig)))
+
+    def exited(_state, role):
+        if not state.get(role):
+            return True
+        if not signals:
+            return False
+        observations.append(True)
+        return eventually_exits and len(observations) >= 2
+
+    monkeypatch.setattr(service, "recorded_process_exited", exited)
+    ticks = iter([0, 11]) if not eventually_exits else iter(range(100))
+    monkeypatch.setattr(
+        service, "time", SimpleNamespace(monotonic=lambda: next(ticks), sleep=lambda _: None)
+    )
+    if eventually_exits:
+        service.stop()
+        assert not state_path.exists()
+    else:
+        with pytest.raises(RuntimeError, match="claim was retained"):
+            service.stop()
+        assert json.loads(state_path.read_text()) == state
+    assert signals == [(state["worker"], signal.SIGTERM)]

@@ -10,6 +10,7 @@ import sys
 import threading
 import time
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 
 import pytest
 
@@ -214,4 +215,87 @@ async def test_starting_record_blocks_duplicate_and_failure_cleans_only_own_chil
     finally:
         other.terminate()
         other.wait(timeout=5)
+        await repo.close()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("outcome", ["exited", "unknown", "changed_before_signal", "reused_pid"])
+async def test_restart_requires_exit_proof_after_one_authorized_signal(
+    tmp_path, monkeypatch, outcome
+):
+    executor, project, request, repo = await setup(tmp_path, [sys.executable, "-V"])
+    pid, birth, full_identity = 2147483000, ("synthetic", 2147483000, 1), "original argv"
+    recorded = {"pid": pid, "birth": list(birth), "identity": full_identity, "phase": "READY"}
+    path = executor.state_path(project)
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps(recorded))
+    signals, observations, launches = [], [], []
+    monkeypatch.setattr(actions, "identity", lambda _: full_identity if not signals else None)
+    monkeypatch.setattr(actions, "process_birth", lambda _: birth if not signals else None)
+    monkeypatch.setattr(actions.os, "kill", lambda target, sig: signals.append((target, sig)))
+
+    def exit_proof(target, expected):
+        assert signals == [(pid, signal.SIGTERM)] and (target, expected) == (pid, birth)
+        observations.append(True)
+        return outcome == "exited" and len(observations) >= 2
+
+    async def launch(*args):
+        assert outcome == "exited" and len(observations) >= 2
+        launches.append(True)
+        return 2147483001, {"status": "NOT_CONFIGURED"}, False
+
+    monkeypatch.setattr(actions, "process_has_exited", exit_proof)
+    monkeypatch.setattr(executor, "start_service", launch)
+    # Advance only this module's deadline clock, leaving the event loop clock intact.
+    ticks = iter([0, 11]) if outcome == "unknown" else iter(range(100))
+    monkeypatch.setattr(actions, "time", SimpleNamespace(monotonic=lambda: next(ticks)))
+    params = {"action": "restart_service", "reason": "Synthetic shutdown proof", "references": []}
+    run, _ = await repo.create_run(request.model_dump(mode="json"), "stop-proof")
+    operation = await repo.freeze_operation(
+        run["id"],
+        "stop-proof",
+        {"request": params, "preview": executor.preview(request, params)},
+        kind="service_action",
+    )
+    await repo.decide(
+        run["id"],
+        "stop-proof",
+        operation["id"],
+        operation["draft_version"],
+        operation["params_digest"],
+        "approve",
+    )
+    if outcome in {"changed_before_signal", "reused_pid"}:
+
+        async def change_after_preview(_project):
+            # The frozen preview already matched. Change only the last effect boundary.
+            if outcome == "changed_before_signal":
+                monkeypatch.setattr(actions, "identity", lambda _: "different argv")
+            else:
+                monkeypatch.setattr(actions, "process_birth", lambda _: (*birth[:-1], 2))
+            return {"status": "NOT_CONFIGURED"}
+
+        monkeypatch.setattr(executor, "health", change_after_preview)
+    try:
+        result = await executor.execute(request, run["id"], params)
+        assert (
+            result["status"]
+            == {
+                "exited": "SUCCEEDED",
+                "unknown": "UNKNOWN",
+                "changed_before_signal": "FAILED",
+                "reused_pid": "FAILED",
+            }[outcome]
+        )
+        assert signals == (
+            [] if outcome in {"changed_before_signal", "reused_pid"} else [(pid, signal.SIGTERM)]
+        )
+        assert len(launches) == int(outcome == "exited")
+        if outcome != "exited":
+            assert json.loads(path.read_text()) == recorded
+            assert (await executor.execute(request, run["id"], params))["status"] == result[
+                "status"
+            ]
+            assert not launches
+    finally:
         await repo.close()

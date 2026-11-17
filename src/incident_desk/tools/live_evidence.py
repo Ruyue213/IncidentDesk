@@ -1,12 +1,14 @@
 """Bounded read-only local collectors. Every response carries honest source coverage."""
 
 import asyncio
+import ctypes
 import hashlib
 import json
 import os
 import re
 import shutil
 import stat
+import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -59,6 +61,36 @@ TEXT_SUFFIXES = {
 }
 TEXT_NAMES = {"Makefile", "Dockerfile", "CMakeLists.txt", "LICENSE", "README"}
 IGNORED_DIRS = {".git", ".local", ".venv", "node_modules", "build", "dist", "__pycache__"}
+
+
+def _process_image(pid: int) -> Path | None:
+    """Read a Darwin executable image, never infer one from a process name."""
+    if sys.platform != "darwin" or type(pid) is not int or not 0 < pid <= 2**31 - 1:
+        return None
+    try:
+        library = ctypes.CDLL("/usr/lib/libproc.dylib", use_errno=True)
+        library.proc_pidpath.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_uint32]
+        library.proc_pidpath.restype = ctypes.c_int
+        buffer = ctypes.create_string_buffer(4096)
+        length = library.proc_pidpath(pid, buffer, len(buffer))
+        return Path(os.fsdecode(buffer.value)) if 0 < length < len(buffer) else None
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
+def _registered_interpreter_image(executable: Path) -> Path | None:
+    # Framework Python can exec Python.app while sys.executable names its
+    # launcher. Accept only an actual file alias of our own interpreter;
+    # unrelated programs with a Python-like name acquire no such equivalence.
+    if sys.platform != "darwin":
+        return None
+    for candidate in (sys.executable, getattr(sys, "_base_executable", None)):
+        try:
+            if candidate and executable.samefile(candidate):
+                return _process_image(os.getpid())
+        except (OSError, ValueError):
+            continue
+    return None
 
 
 def redact(value: str) -> str:
@@ -396,6 +428,11 @@ class LiveEvidence:
             executable_path = self.project.root / executable_path
         resolved_executable = await asyncio.to_thread(executable_path.resolve)
         executables = {Path(self.project.start_argv[0]).name, resolved_executable.name}
+        interpreter_image = await asyncio.to_thread(
+            _registered_interpreter_image, resolved_executable
+        )
+        if interpreter_image:
+            executables.add(interpreter_image.name)
         code, listing = await self._command("ps", "-axo", "pid=,comm=", max_bytes=256 * 1024)
         if code:
             raise OSError("process inspection failed")
@@ -453,6 +490,12 @@ class LiveEvidence:
                 )
             )
             argv_matches = command.strip() in expected_commands
+            if not argv_matches and interpreter_image:
+                alias_command = " ".join([str(interpreter_image), *self.project.start_argv[1:]])
+                # This equivalence is read-only. A persisted managed identity
+                # still requires its exact receipt; no new signal authority.
+                image = await asyncio.to_thread(_process_image, pid)
+                argv_matches = command.strip() == alias_command and image == interpreter_image
             listener = (
                 await owns_health_listener(pid, self.project.health_url)
                 if self.project.health_url

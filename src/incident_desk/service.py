@@ -116,17 +116,12 @@ def stop():
         if not alive(pid, role):
             raise RuntimeError("Saved process identity is unverified; its claim was retained")
         os.kill(pid, signal.SIGTERM)
-        deadline, escalated = time.monotonic() + 5, False
+        deadline = time.monotonic() + 10
         while not recorded_process_exited(state, role):
-            if not alive(pid, role):
-                if recorded_process_exited(state, role):
-                    break  # It exited between the kernel and complete-identity reads.
-                raise RuntimeError("Process identity changed while stopping; claim was retained")
+            # Shutdown can make complete identity temporarily unreadable. Only
+            # positive exit proof releases the claim; do not signal a second time.
             if time.monotonic() >= deadline:
-                if escalated:
-                    raise RuntimeError("Process exit could not be confirmed; claim was retained")
-                os.kill(pid, signal.SIGKILL)
-                escalated, deadline = True, time.monotonic() + 5
+                raise RuntimeError("Process exit could not be confirmed; claim was retained")
             time.sleep(0.1)
     STATE.unlink(missing_ok=True)
 

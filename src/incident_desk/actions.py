@@ -381,30 +381,15 @@ class ActionExecutor:
                     os.kill(before["pid"], signal.SIGTERM)
                     deadline = time.monotonic() + 10
                     while True:
-                        if process_has_exited(
-                            before["pid"], tuple(before["birth"]) if "birth" in before else None
+                        # Exit metadata can disappear before the kernel reports death.
+                        # Once signalled, observe only: incomplete argv/birth is neither
+                        # exit proof nor authority to signal again or launch a replacement.
+                        if await asyncio.to_thread(
+                            process_has_exited,
+                            before["pid"],
+                            tuple(before["birth"]) if "birth" in before else None,
                         ):
                             break
-                        current = identity(before["pid"])
-                        if "birth" in before:
-                            birth = process_birth(before["pid"])
-                            if birth is not None and birth != tuple(before["birth"]):
-                                break
-                            if birth is None and process_exists(before["pid"]) is False:
-                                break
-                            if birth is None:
-                                raise Conflict("Stopping process birth cannot be verified")
-                        elif current is None and process_exists(before["pid"]) is False:
-                            break
-                        if current != before["identity"]:
-                            if process_has_exited(
-                                before["pid"], tuple(before["birth"]) if "birth" in before else None
-                            ):
-                                break
-                            raise Conflict(
-                                "Managed service changed identity while stopping; "
-                                "no replacement was started"
-                            )
                         if time.monotonic() >= deadline:
                             raise RuntimeError(
                                 "Managed process did not stop gracefully; "

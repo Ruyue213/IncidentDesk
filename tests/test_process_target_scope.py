@@ -8,13 +8,16 @@ import sys
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 
 import httpx
 import pytest
 
+from incident_desk import process_probe
 from incident_desk.actions import identity
 from incident_desk.projects import ProjectProfile
 from incident_desk.settings import Settings
+from incident_desk.tools import live_evidence
 from incident_desk.tools.live_evidence import LiveEvidence
 
 
@@ -116,3 +119,61 @@ server.serve_forever()
                 except subprocess.TimeoutExpired:
                     child.kill()
                     await asyncio.to_thread(child.wait, timeout=3)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("mismatch", [None, "image", "arguments", "cwd", "listener"])
+async def test_framework_alias_requires_every_read_only_target_guard(
+    tmp_path, monkeypatch, mismatch
+):
+    pid = 2147483000
+    image = Path("/example/Framework/Python.app/Contents/MacOS/Python")
+    argv = [sys.executable, "server.py", "--port", "18080"]
+    project = ProjectProfile(
+        id="framework",
+        name="Framework",
+        root=tmp_path,
+        start_argv=argv,
+        health_url="http://127.0.0.1:18080/health",
+    )
+    collector = LiveEvidence(
+        project, Settings(_env_file=None, api_key=None, local_dir=tmp_path / "state")
+    )
+    command = " ".join([str(image), *argv[1:]])
+    if mismatch == "arguments":
+        command += " --other-instance"
+
+    async def inspect(*args, **kwargs):
+        if args[:2] == ("ps", "-axo"):
+            return 0, f"{pid} {image}\n"
+        if args[0] == "lsof":
+            cwd = tmp_path / "other" if mismatch == "cwd" else tmp_path
+            return 0, f"p{pid}\nn{cwd}\n"
+        if args[-1] == "command=":
+            return 0, command if len(args) == 5 else "start " + command
+        return 0, command
+
+    async def listener(*args):
+        return mismatch != "listener"
+
+    monkeypatch.setattr(collector, "_command", inspect)
+    monkeypatch.setattr(live_evidence, "shutil", SimpleNamespace(which=lambda _: "lsof"))
+    monkeypatch.setattr(live_evidence, "_registered_interpreter_image", lambda _: image)
+    monkeypatch.setattr(
+        live_evidence,
+        "_process_image",
+        lambda _: image if mismatch != "image" else Path("/other/Python"),
+    )
+    monkeypatch.setattr(process_probe, "owns_health_listener", listener)
+    at = datetime.now(UTC)
+    batch = await collector.get("process", at - timedelta(minutes=1), at + timedelta(minutes=1))
+    content = json.loads(batch["items"][0]["content"])
+    assert content["running"] is (True if mismatch is None else None)
+    if mismatch is None:
+        assert (
+            content["matching_processes"][0]["ownership"]
+            == "observed_only_not_authorized_for_signal"
+        )
+        assert not collector._managed_state(), "Read-only attribution must not create ownership"
+    else:
+        assert content["matching_processes"] == [] and batch["status"] == "partial"
