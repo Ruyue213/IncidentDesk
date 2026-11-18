@@ -5,6 +5,8 @@ import contextlib
 import fcntl
 import json
 import os
+import signal
+import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -19,6 +21,8 @@ from incident_desk.agent.budget import BudgetExceeded
 from incident_desk.agent.diagnostics import DiagnosticSession, InvalidModelOutput
 from incident_desk.agent.harness import execution_step_limit
 from incident_desk.observability import logger
+from incident_desk.process_identity import finish_cleanup
+from incident_desk.runtime_status import write_runtime_status
 from incident_desk.schemas import RunInput, ServiceActionRequest, TicketRequest
 from incident_desk.settings import Settings
 from incident_desk.storage.repository import Repository
@@ -141,18 +145,30 @@ class Worker:
         self.sessions = {}
         self.models = []
         self.models_by_run = {}
+        self.inflight = {}
+        self.worker_id = str(uuid.uuid4())
+        self._shutting_down = False
+        self._stop_requested = None
 
     async def release(self, run_id):
         self.sessions.pop(run_id, None)
         model = self.models_by_run.pop(run_id, None)
         if model is not None:
-            client = getattr(model, "root_async_client", None)
-            if client:
-                await client.close()
-            client = getattr(model, "root_client", None)
-            if client:
-                client.close()
-            self.models = [item for item in self.models if item is not model]
+
+            async def close_clients():
+                try:
+                    client = getattr(model, "root_async_client", None)
+                    if client:
+                        await client.close()
+                finally:
+                    try:
+                        client = getattr(model, "root_client", None)
+                        if client:
+                            await asyncio.to_thread(client.close)
+                    finally:
+                        self.models = [item for item in self.models if item is not model]
+
+            await finish_cleanup(asyncio.create_task(close_clients()))
 
     def crash(self, point: str):
         if self.crash_at == point:
@@ -204,7 +220,19 @@ class Worker:
             }
         from incident_desk.agent.models import make_model
 
-        model = (self.model_factory or make_model)(settings, run_id)
+        # Factories remain synchronous, but must not depend on the event-loop
+        # thread. SDK/ledger construction can contend with another run's DB write.
+        construction = asyncio.create_task(
+            asyncio.to_thread(self.model_factory or make_model, settings, run_id)
+        )
+        try:
+            model = await asyncio.shield(construction)
+        except asyncio.CancelledError:
+            model = await finish_cleanup(construction)
+            self.models.append(model)
+            self.models_by_run[run_id] = model
+            await finish_cleanup(asyncio.create_task(self.release(run_id)))
+            raise
         self.models.append(model)
         self.models_by_run[run_id] = model
         graph = session.graph(
@@ -412,6 +440,7 @@ class Worker:
                 "RateLimitError": "DeepSeek rate limit reached; no hidden retry was performed",
                 "ValueError": "Invalid report, reference, or tool parameters",
                 "Conflict": "Frozen operation, approval, or snapshot no longer matches",
+                "CloudPolicyDenied": "Project cloud-data policy blocked this model request",
             }
             await self.repository.transition(
                 run_id,
@@ -430,25 +459,144 @@ class Worker:
             if latest["status"] in TERMINAL:
                 await self.release(run_id)
 
-    async def run(self, *, once=False):
+    def request_stop(self):
+        if self._stop_requested is not None:
+            self._stop_requested.set()
+
+    async def _publish_runtime(self):
+        counts = await self.repository.workload_counts()
+        active = [run_id for run_id, task in self.inflight.items() if not task.done()]
+        publication = asyncio.create_task(
+            asyncio.to_thread(
+                write_runtime_status,
+                self.settings.local_dir,
+                {
+                    "schema_version": 1,
+                    "pid": os.getpid(),
+                    "worker_id": self.worker_id,
+                    "at": datetime.now(UTC).isoformat(),
+                    "mode": "offline" if self.model_factory else "live",
+                    "capacity": self.settings.worker_concurrency,
+                    "active_count": len(active),
+                    "active_run_ids": active,
+                    "shutting_down": self._shutting_down,
+                    **counts,
+                },
+            )
+        )
+        try:
+            await asyncio.shield(publication)
+        except asyncio.CancelledError:
+            # A cancelled pulse must finish its write before shutdown publishes
+            # the final stopping state; no old thread may overwrite that state.
+            await finish_cleanup(publication)
+            raise
+
+    async def _process_claimed(self, run_id, saver):
+        try:
+            await self.process(run_id, saver)
+        except asyncio.CancelledError:
+
+            async def settle_cancel():
+                current = await self.repository.get_run(run_id)
+                if current["cancel_requested"] and current["status"] not in TERMINAL:
+                    with contextlib.suppress(BudgetExceeded):
+                        await self.repository.finish_active(run_id)
+                    await self.repository.transition(run_id, "CANCELLED")
+
+            await finish_cleanup(asyncio.create_task(settle_cancel()))
+            # Shutdown keeps nonterminal checkpoints resumable. An external
+            # STARTED action retains its UNKNOWN/non-replay receipt semantics.
+            raise
+        finally:
+
+            async def release_claim():
+                try:
+                    if run_id in self.sessions or run_id in self.models_by_run:
+                        await self.release(run_id)
+                finally:
+                    await self.repository.release_run_claim(run_id, self.worker_id)
+
+            await finish_cleanup(asyncio.create_task(release_claim()))
+
+    async def _schedule(self, saver, once):
+        cancelled = set()
+        try:
+            while not self._stop_requested.is_set():
+                for run_id, task in list(self.inflight.items()):
+                    if task.done():
+                        self.inflight.pop(run_id)
+                        expected_cancel = run_id in cancelled
+                        cancelled.discard(run_id)
+                        try:
+                            task.result()
+                        except asyncio.CancelledError:
+                            if not expected_cancel and not self._stop_requested.is_set():
+                                # An unrequested cancellation is a worker interruption,
+                                # not authority to immediately replay its pending graph.
+                                raise
+                        except Exception as error:
+                            logger.error(
+                                "worker.task_failed",
+                                extra={"run_id": run_id, "error_type": type(error).__name__},
+                            )
+                for run_id in await self.repository.cancelled_run_ids(list(self.inflight)):
+                    if run_id not in cancelled:
+                        self.inflight[run_id].cancel()
+                        cancelled.add(run_id)
+                capacity = self.settings.worker_concurrency - len(self.inflight)
+                ready = await self.repository.runnable_runs(capacity) if capacity else []
+                for run_id in ready:
+                    if await self.repository.claim_run(run_id, self.worker_id):
+                        self.inflight[run_id] = asyncio.create_task(
+                            self._process_claimed(run_id, saver), name=f"incidentdesk:{run_id}"
+                        )
+                if once and not self.inflight and not ready:
+                    return
+                if self.inflight:
+                    await asyncio.wait(
+                        self.inflight.values(), timeout=0.1, return_when=asyncio.FIRST_COMPLETED
+                    )
+                else:
+                    with contextlib.suppress(TimeoutError):
+                        await asyncio.wait_for(self._stop_requested.wait(), timeout=0.1)
+        finally:
+            self._shutting_down = True
+            for task in self.inflight.values():
+                task.cancel()
+            if self.inflight:
+                await finish_cleanup(asyncio.create_task(self._drain_inflight()))
+            await finish_cleanup(
+                asyncio.create_task(self.repository.release_worker_claims(self.worker_id))
+            )
+            self.inflight.clear()
+
+    async def _drain_inflight(self):
+        await asyncio.gather(*self.inflight.values(), return_exceptions=True)
+
+    async def run(self, *, once=False, handle_signals=False):
         with WorkerLock(self.settings.local_dir):
             await self.repository.init()
+            # The lifetime flock proves a previous local owner is no longer
+            # running. This is deliberately not a multi-worker lease protocol.
+            await self.repository.reset_worker_claims()
+            self.worker_id = str(uuid.uuid4())
+            self._shutting_down = False
+            self._stop_requested = asyncio.Event()
+            loop, previous_term = asyncio.get_running_loop(), None
+            if handle_signals:
+                previous_term = signal.getsignal(signal.SIGTERM)
+                loop.add_signal_handler(signal.SIGTERM, self.request_stop)
 
             async def pulse():
                 while True:
-                    heartbeat = self.settings.local_dir / "worker-heartbeat.json"
-                    temporary = heartbeat.with_suffix(".tmp")
-                    temporary.write_text(
-                        json.dumps(
-                            {
-                                "pid": os.getpid(),
-                                "at": datetime.now(UTC).isoformat(),
-                                "mode": "offline" if self.model_factory else "live",
-                            }
+                    try:
+                        await self._publish_runtime()
+                    except Exception as error:
+                        logger.warning(
+                            "worker.status_write_failed", extra={"error_type": type(error).__name__}
                         )
-                    )
-                    temporary.replace(heartbeat)
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(0.5)
 
             heartbeat_task = asyncio.create_task(pulse())
 
@@ -529,13 +677,7 @@ class Worker:
                         ),
                     )
                     await saver.setup()
-                    while True:
-                        runs = await self.repository.pending_runs()
-                        for run in runs:
-                            await self.process(run["id"], saver)
-                        if once:
-                            return
-                        await asyncio.sleep(0.25)
+                    await self._schedule(saver, once)
             finally:
                 if sampler_task:
                     sampler_task.cancel()
@@ -551,7 +693,13 @@ class Worker:
                     client = getattr(model, "root_client", None)
                     if client:
                         client.close()
+                self._shutting_down = True
+                with contextlib.suppress(Exception):
+                    await self._publish_runtime()
                 await self.repository.close()
                 self.models.clear()
                 self.sessions.clear()
                 self.models_by_run.clear()
+                if handle_signals:
+                    loop.remove_signal_handler(signal.SIGTERM)
+                    signal.signal(signal.SIGTERM, previous_term)

@@ -17,6 +17,7 @@ from incident_desk.api.contracts import EventPage, ResumeView, RunPage, RunView
 from incident_desk.api.knowledge import create_knowledge_router
 from incident_desk.api.model_settings import create_model_settings_router
 from incident_desk.api.observations import create_observations_router
+from incident_desk.api.outcomes import create_outcomes_router
 from incident_desk.api.projects import create_projects_router
 from incident_desk.knowledge.project_store import ProjectKnowledgeStore
 from incident_desk.model_config import ModelConfigStore
@@ -50,12 +51,13 @@ def create_app(settings: Settings, repository: Repository | None = None) -> Fast
         finally:
             await repo.close()
 
-    app = FastAPI(title="IncidentDesk", version="0.3.0b1", lifespan=lifespan)
+    app = FastAPI(title="IncidentDesk", version="0.4.0b1", lifespan=lifespan)
     app.state.repository = repo
     app.include_router(create_model_settings_router(settings, models))
     app.include_router(create_projects_router(settings, projects))
     app.include_router(create_knowledge_router(settings, projects, knowledge))
     app.include_router(create_observations_router(settings, projects))
+    app.include_router(create_outcomes_router(settings, repo))
 
     @app.middleware("http")
     async def local_boundary(request: Request, call_next):
@@ -97,14 +99,66 @@ def create_app(settings: Settings, repository: Repository | None = None) -> Fast
         )
 
     def worker_state():
-        path = settings.local_dir / "worker-heartbeat.json"
+        from incident_desk.runtime_status import read_runtime_status
+
+        return read_runtime_status(settings)
+
+    @app.get("/api/runtime")
+    async def runtime_status():
+        return await asyncio.to_thread(worker_state)
+
+    @app.get("/api/runs/{run_id}/retrieval")
+    async def retrieval_trace(run_id: str):
+        from incident_desk.knowledge.retrieval_audit import RetrievalAudit
+
+        await repo.get_run(run_id)
+        audit = await asyncio.to_thread(RetrievalAudit, settings.local_dir)
+        return await asyncio.to_thread(audit.for_run, run_id)
+
+    @app.get("/api/runs/{run_id}/cloud-audit")
+    async def cloud_audit(run_id: str):
+        from incident_desk.cloud_policy import CloudAudit
+
+        await repo.get_run(run_id)
+        audit = await asyncio.to_thread(CloudAudit, settings.local_dir)
+        return await asyncio.to_thread(audit.for_run, run_id)
+
+    @app.get("/api/runs/{run_id}/verify-business")
+    async def business_verifications(run_id: str):
+        items = await repo.list_evidence(run_id)
+        checks = [
+            item
+            for item in items
+            if item.get("provenance", {}).get("purpose") == "operator_outcome_verification"
+        ]
+        checks.sort(key=lambda item: item.get("collected_at", ""), reverse=True)
+        return {"items": checks[:20]}
+
+    @app.post("/api/runs/{run_id}/verify-business")
+    async def verify_business(run_id: str):
+        from incident_desk.cloud_policy import redact_snapshot
+        from incident_desk.tools.business_probe import BusinessProbe
+
+        run = await repo.get_run(run_id)
+        body = RunInput.model_validate(run["request"])
+        if body.mode != "live" or run["status"] not in TERMINAL:
+            raise HTTPException(409, "Finish a real-project task before verifying its outcome")
         try:
-            state = json.loads(path.read_text())
-            age = max(0, (datetime.now(UTC) - datetime.fromisoformat(state["at"])).total_seconds())
-            os.kill(state["pid"], 0)
-            return {**state, "status": "ready" if age < 15 else "stale", "age_seconds": age}
-        except (OSError, ValueError, KeyError):
-            return {"status": "unavailable"}
+            current = await asyncio.to_thread(projects.get, body.service_id)
+            if current.version != body.project_version:
+                raise HTTPException(409, "Project settings changed; verify from a new diagnosis")
+            if not current.business_probe or not current.health_url:
+                raise HTTPException(422, "Register a fixed business probe first")
+            batch = await BusinessProbe(settings).run(current, 1)
+        except ValueError:
+            raise HTTPException(422, "No supported fixed business probe is configured") from None
+        items = []
+        for item in batch.get("items", []):
+            item["provenance"]["purpose"] = "operator_outcome_verification"
+            item["provenance"]["business_ok"] = batch["business_ok"]
+            item = redact_snapshot(item, body.cloud_policy or current.cloud_policy)
+            items.append(await repo.save_evidence(run_id, item))
+        return {**batch, "items": items}
 
     @app.get("/api/readiness")
     async def readiness():
@@ -147,8 +201,11 @@ def create_app(settings: Settings, repository: Repository | None = None) -> Fast
             await repo.ping()
         except Exception as error:
             raise HTTPException(503, "local application database unavailable") from error
+        worker = worker_state()
+        if worker["status"] == "unavailable":
+            worker = {"status": "unavailable"}
         return JSONResponse(
-            content={"status": "ok", "database": "ok", "worker": worker_state()},
+            content={"status": "ok", "database": "ok", "worker": worker},
             headers={"X-IncidentDesk-PID": str(os.getpid())},
         )
 
@@ -191,6 +248,8 @@ def create_app(settings: Settings, repository: Repository | None = None) -> Fast
                     "model_profile_version",
                     "knowledge_generation",
                     "retrieval_mode",
+                    "retrieval_config",
+                    "cloud_policy",
                 ):
                     if incoming.get(field) is None:
                         incoming[field] = previous.get(field)
@@ -201,6 +260,19 @@ def create_app(settings: Settings, repository: Repository | None = None) -> Fast
                 project = projects.get(body.service_id, body.project_version)
                 model_version = body.model_profile_version or models.freeze()
                 models.settings_for_version(model_version)
+                if (
+                    body.retrieval_config is not None
+                    and body.retrieval_config != project.retrieval_config
+                ):
+                    raise ValueError("Retrieval settings must match the saved project")
+                if body.cloud_policy is not None and body.cloud_policy != project.cloud_policy:
+                    raise ValueError("Cloud settings must match the saved project")
+                if project.cloud_policy.mode == "deny":
+                    raise HTTPException(
+                        422,
+                        "Cloud diagnosis is disabled for this project; "
+                        "local collection and knowledge checks remain available",
+                    )
                 generation = await asyncio.to_thread(
                     knowledge.active_generation, project.id, project.version
                 )
@@ -221,6 +293,8 @@ def create_app(settings: Settings, repository: Repository | None = None) -> Fast
                     "model_profile_version": model_version,
                     "knowledge_generation": generation,
                     "retrieval_mode": body.retrieval_mode or project.retrieval_mode,
+                    "retrieval_config": project.retrieval_config,
+                    "cloud_policy": project.cloud_policy,
                 }
             )
             if body.parent_run_id:

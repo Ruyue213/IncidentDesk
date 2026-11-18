@@ -1,0 +1,517 @@
+"""Frozen span-level, paired local RRF/CrossEncoder evaluation; no downloads or cloud calls."""
+
+import argparse
+import hashlib
+import importlib.metadata
+import json
+import math
+import os
+import platform
+import resource
+import shutil
+import statistics
+import subprocess
+import tempfile
+import time
+from datetime import UTC, datetime
+from pathlib import Path
+
+from incident_desk.knowledge.embeddings import LocalEmbeddings
+from incident_desk.knowledge.project_store import ProjectKnowledgeStore, _chunks
+from incident_desk.knowledge.reranker import LocalCrossEncoder
+from incident_desk.knowledge.retrieval_config import RetrievalConfig
+from incident_desk.projects import ProjectProfile
+
+ROOT = Path(__file__).resolve().parents[1]
+DATASET = ROOT / "evals/retrieval-v2"
+PROJECT_ID = "retrieval-benchmark-v2"
+ROUNDS = ("first_pass", "cache_warm_repeat")
+MODES = ("off", "cross_encoder")
+CODE_PATHS = (
+    "scripts/evaluate_reranking.py",
+    "src/incident_desk/knowledge/project_store.py",
+    "src/incident_desk/knowledge/embeddings.py",
+    "src/incident_desk/knowledge/reranker.py",
+    "src/incident_desk/knowledge/retrieval_config.py",
+    "src/incident_desk/knowledge/store.py",
+    "src/incident_desk/projects.py",
+    "src/incident_desk/cloud_policy.py",
+)
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def canonical_hash(value):
+    raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def write_new(path, value):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8") as output:
+        json.dump(value, output, ensure_ascii=False, indent=2, allow_nan=False)
+        output.write("\n")
+
+
+def validate_dataset(directory=DATASET):
+    directory = Path(directory)
+    freeze = json.loads((directory / "freeze-v2.json").read_text())
+    material_paths = {
+        path.relative_to(directory).as_posix()
+        for path in (directory / "corpus").rglob("*")
+        if path.is_file() or path.is_symlink()
+    } | {"development.json", "acceptance.json", "protocol.json"}
+    if material_paths != set(freeze["material_files"]):
+        raise ValueError("Frozen material file list changed; extra or missing corpus material")
+    hashes = {name: sha(directory / name) for name in freeze["material_files"]}
+    if hashes != freeze["material_files"] or canonical_hash(hashes) != freeze["sha256"]:
+        raise ValueError("Frozen corpus, labels or protocol changed")
+    chunks = []
+    for path in sorted((directory / "corpus").glob("*.md")):
+        chunks.extend(_chunks(PROJECT_ID, path.relative_to(directory).as_posix(), path.read_text()))
+    groups, ids, spans, splits = {}, set(), 0, {}
+    for split in ("development", "acceptance"):
+        queries = json.loads((directory / f"{split}.json").read_text())["queries"]
+        if len(queries) < 24:
+            raise ValueError("Each independent split must have at least 24 queries")
+        groups[split] = {query["mechanism_group"] for query in queries}
+        for query in queries:
+            if query["id"] in ids:
+                raise ValueError("Duplicate query ID")
+            ids.add(query["id"])
+            if query["answerable"] != bool(query["relevant_spans"]):
+                raise ValueError("Answerability and gold spans disagree")
+            grades = {}
+            for label in query["relevant_spans"]:
+                source = (directory / label["path"]).read_text()
+                start, end = label["start_char"], label["end_char"]
+                if source[start:end] != label["quote"]:
+                    raise ValueError(f"Source span mismatch: {query['id']}")
+                if source[:start].count("\n") + 1 != label["line_start"]:
+                    raise ValueError("Source start line mismatch")
+                if source[:end].count("\n") + 1 != label["line_end"]:
+                    raise ValueError("Source end line mismatch")
+                matches = [chunk for chunk in chunks if matches_span(chunk, label)]
+                if not matches:
+                    raise ValueError(f"Gold span is split by chunking: {query['id']}")
+                for chunk in matches:
+                    grades[chunk["id"]] = max(grades.get(chunk["id"], 0), label["grade"])
+                spans += 1
+            for negative in query["hard_negative_paths"]:
+                if not (directory / negative).is_file():
+                    raise ValueError("Missing hard negative")
+            query["gold_chunk_grades"] = grades
+        splits[split] = queries
+    if groups["development"] & groups["acceptance"]:
+        raise ValueError("Mechanism groups leak across splits")
+    return {
+        "sha256": freeze["sha256"],
+        "frozen_at": freeze["created_at"],
+        "chunks": len(chunks),
+        "validated_query_spans": spans,
+        "counts": {name: len(rows) for name, rows in splits.items()},
+        "splits": splits,
+    }
+
+
+def matches_span(chunk, label):
+    path = chunk.get("path", chunk.get("provenance", {}).get("relative_path"))
+    return path == label["path"] and label["quote"] in chunk.get("content", "")
+
+
+def metrics(query, rows, *, valid=True):
+    rows = rows if valid else []
+    units = {
+        label["unit_id"]
+        for label in query["relevant_spans"]
+        if any(matches_span(row, label) for row in rows)
+    }
+    gold_units = {label["unit_id"] for label in query["relevant_spans"]}
+    seen, dcg, first = set(), 0.0, None
+    for rank, row in enumerate(rows[:5], 1):
+        identity = row["id"]
+        grade = query["gold_chunk_grades"].get(identity, 0) if identity not in seen else 0
+        seen.add(identity)
+        if grade:
+            first = first or rank
+            dcg += (2**grade - 1) / math.log2(rank + 1)
+    ideal = sum(
+        (2**grade - 1) / math.log2(rank + 1)
+        for rank, grade in enumerate(
+            sorted(query["gold_chunk_grades"].values(), reverse=True)[:5], 1
+        )
+    )
+    return {
+        "span_recall": len(units) / len(gold_units) if gold_units else 0.0,
+        "mrr@5": 1 / first if first else 0.0,
+        "ndcg@5": dcg / ideal if ideal else 0.0,
+        "hard_negative_at5": int(
+            any(
+                row.get("path", row.get("provenance", {}).get("relative_path"))
+                in query["hard_negative_paths"]
+                for row in rows[:5]
+            )
+        ),
+    }
+
+
+def resource_rss_mib():
+    value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return round(value / (1024**2 if platform.system() == "Darwin" else 1024), 3)
+
+
+def percentile(values, quantile):
+    values = sorted(value for value in values if isinstance(value, (int, float)))
+    return values[min(len(values) - 1, math.ceil(quantile * len(values)) - 1)] if values else None
+
+
+def distribution(values):
+    values = [value for value in values if isinstance(value, (int, float))]
+    return {
+        "count": len(values),
+        "median": statistics.median(values) if values else None,
+        "p95": percentile(values, 0.95),
+        "max": max(values) if values else None,
+    }
+
+
+def summarize(rows):
+    groups = {}
+    for round_name in ROUNDS:
+        for mode in MODES:
+            group = [row for row in rows if row["round"] == round_name and row["mode"] == mode]
+            answerable = [row for row in group if row["answerable"]]
+            no_answer = [row for row in group if not row["answerable"]]
+
+            def quality(selected, key):
+                return (
+                    sum(row["strict"][key] for row in selected) / len(selected) if selected else 0
+                )
+
+            def count_rate(selected, predicate):
+                count = sum(bool(predicate(row)) for row in selected)
+                return {
+                    "numerator": count,
+                    "denominator": len(selected),
+                    "rate": count / len(selected) if selected else None,
+                }
+
+            groups[f"{round_name}/{mode}"] = {
+                "planned_queries": len(group),
+                "answerable_queries": len(answerable),
+                "no_answer_queries": len(no_answer),
+                "complete": sum(row["valid"] for row in group),
+                "degraded_or_failed": sum(not row["valid"] for row in group),
+                "strict_all_queries": {
+                    key: quality(group, key)
+                    for key in (
+                        "candidate_recall@N",
+                        "rerank_pool_recall@M",
+                        "recall@5",
+                        "mrr@5",
+                        "ndcg@5",
+                    )
+                },
+                "strict_answerable_only": {
+                    key: quality(answerable, key)
+                    for key in (
+                        "candidate_recall@N",
+                        "rerank_pool_recall@M",
+                        "recall@5",
+                        "mrr@5",
+                        "ndcg@5",
+                    )
+                },
+                "returned_including_fallback_answerable": {
+                    key: sum(row["returned_quality"][key] for row in answerable) / len(answerable)
+                    if answerable
+                    else 0
+                    for key in ("span_recall", "mrr@5", "ndcg@5")
+                },
+                "hard_negative_exposure_answerable": count_rate(
+                    answerable, lambda row: row["returned_quality"]["hard_negative_at5"]
+                ),
+                "no_answer_returned_context": count_rate(no_answer, lambda row: bool(row["final"])),
+                "no_answer_correct_empty_retrieval": count_rate(
+                    no_answer, lambda row: row["valid"] and not row["final"]
+                ),
+                "latency_ms": distribution([row["elapsed_ms"] for row in group]),
+                "model_load_ms": distribution(
+                    [row["reranker"].get("model_load_ms") for row in group]
+                ),
+                "inference_ms": distribution(
+                    [row["reranker"].get("inference_ms") for row in group]
+                ),
+                "ce_peak_rss_mib": distribution(
+                    [row["reranker"].get("peak_rss_mib") for row in group]
+                ),
+                "parent_peak_rss_mib": distribution([row["parent_peak_rss_mib"] for row in group]),
+                "truncation": [row["reranker"].get("truncation") for row in group],
+            }
+    return groups
+
+
+def current_code():
+    return {name: sha(ROOT / name) for name in CODE_PATHS}
+
+
+def code_freeze(plan, validation):
+    hashes = current_code()
+    return {
+        "version": "retrieval-v2-code-freeze-v1",
+        "created_at": datetime.now(UTC).isoformat(),
+        "git_base": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+        ).strip(),
+        "source_files": hashes,
+        "source_sha256": canonical_hash(hashes),
+        "dataset_sha256": validation["sha256"],
+        "run_plan_sha256": canonical_hash(plan),
+        "config": RetrievalConfig().model_dump(),
+    }
+
+
+def compare_gate(summary, rows, plan):
+    baseline = summary["cache_warm_repeat/off"]
+    on = summary["cache_warm_repeat/cross_encoder"]
+    bq, oq = baseline["strict_answerable_only"], on["strict_answerable_only"]
+    gates = plan["adoption_gates"]
+    latency, memory = on["latency_ms"]["p95"], on["ce_peak_rss_mib"]["max"]
+    checks = {
+        "same_candidates": all(row.get("paired_candidates_equal") is True for row in rows),
+        "no_failures_or_degradation": all(row["valid"] for row in rows),
+        "ndcg_gain": oq["ndcg@5"] - bq["ndcg@5"] >= gates["min_ndcg_gain"],
+        "recall_nonregression": oq["recall@5"] >= bq["recall@5"],
+        "hard_negative_nonregression": on["hard_negative_exposure_answerable"]["numerator"]
+        <= baseline["hard_negative_exposure_answerable"]["numerator"],
+        "no_answer_context_nonregression": on["no_answer_returned_context"]["numerator"]
+        <= baseline["no_answer_returned_context"]["numerator"],
+        "cpu_latency_budget": latency is not None and latency <= gates["max_p95_total_ms"],
+        "ce_memory_budget": memory is not None and memory <= gates["max_ce_peak_rss_mib"],
+    }
+    return {
+        "checks": checks,
+        "all_pass": all(checks.values()),
+        "recommendation": "eligible_for_operator_review"
+        if all(checks.values())
+        else "keep_default_off",
+        "ndcg_delta": oq["ndcg@5"] - bq["ndcg@5"],
+        "recall_delta": oq["recall@5"] - bq["recall@5"],
+        "interpretation": (
+            "Synthetic local adoption screen; not a production SLA or diagnosis accuracy."
+        ),
+    }
+
+
+def evaluate(split, model_dir, output, freeze, plan, validation):
+    os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", HF_HUB_DISABLE_TELEMETRY="1")
+    if freeze["source_files"] != current_code():
+        raise ValueError(
+            "Evaluation source differs from code freeze; create a new immutable freeze"
+        )
+    if freeze["dataset_sha256"] != validation["sha256"] or freeze[
+        "run_plan_sha256"
+    ] != canonical_hash(plan):
+        raise ValueError("Run plan or data differs from code freeze")
+    output = Path(output)
+    if output.exists() or output.with_suffix(".rows.jsonl").exists():
+        raise ValueError("Output already exists; preserve previous attempts")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    rows = []
+    report = {
+        "version": "retrieval-v2-results-v1",
+        "synthetic": True,
+        "split": split,
+        "started_at": datetime.now(UTC).isoformat(),
+        "dataset_sha256": validation["sha256"],
+        "code_freeze": freeze,
+        "run_plan": plan,
+        "rows": rows,
+        "versions": {
+            package: importlib.metadata.version(package)
+            for package in ("torch", "transformers", "sentence-transformers", "tokenizers")
+        },
+        "platform": {
+            "system": platform.system(),
+            "machine": platform.machine(),
+            "python": platform.python_version(),
+        },
+        "measurement_limits": [
+            "Every CE score starts a new isolated process and loads its model; "
+            "cache_warm_repeat means OS file-cache warm, never resident-model inference.",
+            "E5 passage indexing/model loading is separately measured; "
+            "E5 remains loaded in the parent during query measurements.",
+            "Parent RSS is process lifetime high-water; CE RSS is child high-water. "
+            "They are not a simultaneous RSS sum.",
+            "No answer threshold is configured. Returning context is not an answer, "
+            "and an error is not a correct abstention.",
+            "Same collaborating agent authored both independent mechanism splits; "
+            "no blinded human or real multi-user quality claim.",
+        ],
+    }
+    with (
+        output.with_suffix(".rows.jsonl").open("x") as journal,
+        tempfile.TemporaryDirectory(prefix="incidentdesk-v2-") as temp,
+    ):
+        project_root = Path(temp) / "project"
+        shutil.copytree(DATASET / "corpus", project_root / "corpus")
+        embeddings, reranker = LocalEmbeddings(model_dir), LocalCrossEncoder(model_dir)
+        report["models"] = {"embedding": embeddings.status(), "reranker": reranker.status()}
+        store = ProjectKnowledgeStore(
+            Path(temp) / "state", embeddings=embeddings, reranker=reranker
+        )
+        project = ProjectProfile(
+            id=PROJECT_ID,
+            name="Original synthetic evaluation",
+            root=project_root,
+            knowledge_paths=["corpus"],
+        )
+        started = time.perf_counter()
+        try:
+            indexed = store.ingest(project, embed=True)
+        except Exception as error:
+            # Preserve every planned query even if indexing completely fails.
+            indexed = {"generation": None, "status": "failed", "error_type": type(error).__name__}
+        report["indexing"] = {
+            "elapsed_ms": (time.perf_counter() - started) * 1000,
+            "parent_peak_rss_mib": resource_rss_mib(),
+            "result": indexed,
+        }
+        for round_name in ROUNDS:
+            for position, query in enumerate(validation["splits"][split]):
+                pair = []
+                for mode in MODES if position % 2 == 0 else tuple(reversed(MODES)):
+                    started = time.perf_counter()
+                    batch, error = {}, None
+                    try:
+                        batch = store.search(
+                            PROJECT_ID,
+                            indexed["generation"],
+                            query["query"],
+                            mode="hybrid",
+                            retrieval_config=RetrievalConfig(**plan["config"], reranker=mode),
+                        )
+                    except Exception as failure:
+                        error = {"type": type(failure).__name__, "message": str(failure)[:400]}
+                    elapsed = (time.perf_counter() - started) * 1000
+                    retrieval = batch.get("retrieval", {})
+                    candidates = retrieval.get("candidates", {})
+                    rr = retrieval.get("reranker", {})
+                    valid = batch.get("status") == "complete" and (
+                        mode == "off"
+                        or (
+                            rr.get("effective") == "cross_encoder"
+                            and rr.get("status") == "complete"
+                        )
+                    )
+                    final = batch.get("items", [])
+                    final_quality = metrics(query, final)
+                    strict_quality = metrics(query, final, valid=valid)
+                    row = {
+                        "round": round_name,
+                        "mode": mode,
+                        "query_id": query["id"],
+                        "query": query["query"],
+                        "language": query["language"],
+                        "kind": query["kind"],
+                        "mechanism_group": query["mechanism_group"],
+                        "answerable": query["answerable"],
+                        "valid": valid,
+                        "status": batch.get("status", "failed"),
+                        "error": error or batch.get("error"),
+                        "elapsed_ms": elapsed,
+                        "parent_peak_rss_mib": resource_rss_mib(),
+                        "reranker": rr,
+                        "stage_timings_ms": retrieval.get("stage_timings_ms"),
+                        "phase_counts": retrieval.get("phase_counts"),
+                        "candidates": candidates,
+                        "final": final,
+                        "returned_quality": final_quality,
+                        "returned_candidate_recall@N": metrics(query, candidates.get("fused", []))[
+                            "span_recall"
+                        ],
+                        "returned_rerank_pool_recall@M": metrics(
+                            query, candidates.get("before_rerank", [])
+                        )["span_recall"],
+                        "strict": {
+                            "candidate_recall@N": metrics(
+                                query, candidates.get("fused", []), valid=valid
+                            )["span_recall"],
+                            "rerank_pool_recall@M": metrics(
+                                query, candidates.get("before_rerank", []), valid=valid
+                            )["span_recall"],
+                            "recall@5": strict_quality["span_recall"],
+                            "mrr@5": strict_quality["mrr@5"],
+                            "ndcg@5": strict_quality["ndcg@5"],
+                        },
+                    }
+                    pair.append(row)
+                identities = [
+                    [chunk["id"] for chunk in row["candidates"].get("before_rerank", [])]
+                    for row in pair
+                ]
+                equal = bool(identities[0]) and identities[0] == identities[1]
+                for row in pair:
+                    row["paired_candidates_equal"] = equal
+                    rows.append(row)
+                    journal.write(json.dumps(row, ensure_ascii=False, allow_nan=False) + "\n")
+                    journal.flush()
+                print(
+                    f"{round_name} {query['id']}: pair={equal} "
+                    + ", ".join(
+                        f"{row['mode']}={row['status']} {row['elapsed_ms']:.0f}ms" for row in pair
+                    ),
+                    flush=True,
+                )
+    report["finished_at"] = datetime.now(UTC).isoformat()
+    report["source_unchanged_during_run"] = freeze["source_files"] == current_code()
+    report["summary"] = summarize(rows)
+    report["adoption"] = compare_gate(report["summary"], rows, plan)
+    if not report["source_unchanged_during_run"]:
+        report["adoption"]["checks"]["source_unchanged_during_run"] = False
+        report["adoption"].update(all_pass=False, recommendation="keep_default_off")
+    write_new(output, report)
+    return report
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--split", choices=("development", "acceptance"))
+    parser.add_argument("--model-dir", type=Path, default=ROOT / ".local")
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--validate-only", action="store_true")
+    parser.add_argument("--freeze-code", type=Path, help="Create source freeze without inference")
+    parser.add_argument(
+        "--code-freeze", type=Path, help="Required immutable source freeze for evaluation"
+    )
+    args = parser.parse_args()
+    validation = validate_dataset()
+    plan = json.loads((DATASET / "run-plan-v1.json").read_text())
+    if args.validate_only:
+        print(
+            json.dumps(
+                {key: value for key, value in validation.items() if key != "splits"}, indent=2
+            )
+        )
+    elif args.freeze_code:
+        write_new(args.freeze_code, code_freeze(plan, validation))
+        print(f"Source and run plan frozen: {args.freeze_code}")
+    else:
+        if not args.split or not args.output or not args.code_freeze:
+            parser.error("evaluation requires --split, --output and --code-freeze")
+        report = evaluate(
+            args.split,
+            args.model_dir,
+            args.output,
+            json.loads(args.code_freeze.read_text()),
+            plan,
+            validation,
+        )
+        print(json.dumps({"output": str(args.output), "adoption": report["adoption"]}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

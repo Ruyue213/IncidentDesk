@@ -61,7 +61,7 @@ export default function ProjectEvidencePanel({ project }: { project: ProjectProf
         const value = await api.knowledge(project.id);
         if (current()) { setKnowledge(value); setResult(null); setNotice(`已建立 ${indexed.chunks} 个知识片段；新任务会冻结该索引版本。`); }
       } else if (kind === 'search' && knowledge?.usable_generation) {
-        const value = await api.searchKnowledge(project.id, knowledge.usable_generation, query.trim(), project.retrieval_mode || 'hybrid');
+        const value = await api.searchKnowledge(project.id, knowledge.usable_generation, query.trim(), project.retrieval_mode || 'hybrid', project.version);
         if (current()) setResult(value);
       } else if (kind === 'history') {
         await api.sampleProject(project.id);
@@ -84,6 +84,8 @@ export default function ProjectEvidencePanel({ project }: { project: ProjectProf
     <h4>已保存项目 v{project.version} · 知识库与运行历史</h4>
     <p className={s.muted}>索引只读取你登记的 Markdown / 文本。向量计算在本机执行；诊断时检索片段会随任务证据发送给已配置的云模型。</p>
     <p>向量模型：{knowledge ? `${knowledge.model.model_id} · ${modelState[knowledge.model.state] || knowledge.model.state}` : '正在读取…'}<br />{generation ? `${generation.documents} 个文档 · ${generation.chunks} 个片段 · 索引 ${generation.generation.slice(0, 12)}` : '当前项目版本尚无可用索引'}</p>
+    {knowledge?.reranker_model && <p>重排模型：{knowledge.reranker_model.model_id} · {modelState[knowledge.reranker_model.state] || knowledge.reranker_model.state}<br />每路 {project.retrieval_config?.candidate_n ?? 50} 个候选 → 重排前 {project.retrieval_config?.rerank_top_n ?? 20} 个 → 最终 {project.retrieval_config?.top_k ?? 5} 个片段</p>}
+    {project.retrieval_config?.reranker === 'cross_encoder' && knowledge?.reranker_model?.download_required && <p className={s.inlineInfo}>重排已选中但本机模型尚未安装，当前会回退。请按安装说明明确下载本机重排模型，再试检索核对状态。</p>}
     {knowledge?.model.download_required && <p className={s.inlineInfo}>尚未安装本地模型，检索会明确降级为词法方式。按安装文档下载模型后，重新建立索引。</p>}
     {knowledge?.model.state === 'missing_dependencies' && <p className={s.inlineInfo}>缺少本地向量计算依赖，请按安装文档安装 rag 依赖后再建立索引。</p>}
     {generation?.embedding?.indexed === false && <p className={s.inlineInfo} role="status">当前知识版本没有向量索引；即使本机模型已就绪，也需要重新建立知识索引后才能使用混合或向量检索。</p>}
@@ -93,6 +95,9 @@ export default function ProjectEvidencePanel({ project }: { project: ProjectProf
     {error && <div className={s.inlineError} role="alert">{error}</div>}{notice && <div className={s.inlineInfo} role="status">{notice}</div>}
     {result && <div className={s.probeResults}>
       <h4>检索：{result.status} · 实际方式 {result.retrieval?.effective_mode || '未知'}</h4>
+      {result.retrieval?.reranker && <p role="status">重排：{result.retrieval.reranker.status} · 实际执行 {result.retrieval.reranker.effective}{result.retrieval.reranker.error && ` · ${result.retrieval.reranker.error.message || result.retrieval.reranker.error.code}`}</p>}
+      {result.retrieval?.phase_counts && <p>候选 {result.retrieval.phase_counts.fusion_candidates ?? 0} · 送入重排 {result.retrieval.phase_counts.rerank_candidates ?? 0} · 返回 {result.items.length} · 总耗时 {result.retrieval.latency_ms ?? '未知'} ms</p>}
+      {result.retrieval?.hits && <details className={s.advancedSettings}><summary>查看本次排名与分数</summary><pre className={s.evidenceJson}>{JSON.stringify({ config: result.retrieval.config, timings_ms: result.retrieval.stage_timings_ms, ranking: result.retrieval.hits }, null, 2)}</pre></details>}
       {reason && <p className={s.inlineInfo}>{reason}{errorCode && <small>错误代码：{errorCode}</small>}</p>}
       {result.items.map((item) => <div key={item.id}><strong aria-label="知识片段来源">{sourceLocation(item)}</strong><small>{item.id}</small><pre className={s.evidenceJson}>{String(item.content)}</pre></div>)}
       {!result.items.length && <p>本次没有可返回的知识片段。</p>}

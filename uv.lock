@@ -546,7 +546,7 @@ wheels = [
 
 [[package]]
 name = "incident-desk"
-version = "0.3.0b1"
+version = "0.4.0b1"
 source = { editable = "." }
 dependencies = [
     { name = "aiosqlite" },

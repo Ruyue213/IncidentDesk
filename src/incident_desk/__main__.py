@@ -111,6 +111,10 @@ def main(*, service_defaults=False):
     commands.add_parser("doctor", help="check installation resources without any model calls")
     embeddings = commands.add_parser("embeddings", help="manage optional pinned local embeddings")
     embeddings.add_argument("action", choices=["status", "download"])
+    reranker = commands.add_parser(
+        "reranker", help="manage the optional pinned local Cross-Encoder"
+    )
+    reranker.add_argument("action", choices=["status", "download"])
     for action in ("start", "serve", "stop", "restart"):
         command = commands.add_parser(action, help="manage local API and worker processes")
         command.add_argument("--port", type=int)
@@ -135,6 +139,16 @@ def main(*, service_defaults=False):
     )
     if args.local_dir:
         settings.local_dir = args.local_dir.resolve()
+    if args.command == "reranker":
+        from incident_desk.knowledge.reranker import LocalCrossEncoder, download_model
+
+        result = (
+            download_model(settings.local_dir)
+            if args.action == "download"
+            else LocalCrossEncoder(settings.local_dir).status()
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
     if args.command == "embeddings":
         from incident_desk.knowledge.embeddings import LocalEmbeddings, download_model
 
@@ -235,7 +249,7 @@ def main(*, service_defaults=False):
                 settings,
                 model_factory=make_reliability_model if args.offline else None,
                 crash_at=args.crash_at,
-            ).run(once=args.once)
+            ).run(once=args.once, handle_signals=True)
         )
     else:
         asyncio.run(execute(args, settings))

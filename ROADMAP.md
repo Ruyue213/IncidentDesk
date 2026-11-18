@@ -23,6 +23,10 @@ A release must meet all applicable checks below. Workflow files or planned funct
 4. **Broaden adapters only from evidence.** Add a new service or observation source with a documented registration contract, bounded read-only business probe, failure injection, and tests. Docker/remote execution or another model provider requires an explicit threat/support review and its own release checks.
 5. **Turn verified cases into public material.** Publish short, reproducible case studies with synthetic or explicitly redistributable data, source revisions, settings, evidence, unsuccessful hypotheses, and final verification. Provide a small video as a release asset after checking it for private data. Keep the repository small enough to clone quickly.
 
+Collect field evidence before choosing shared deployment defaults. Record queue delay and completion percentiles at known concurrency, publish diagnostic review coverage and independent incident labels, and distinguish attempted operations, mistaken actions, and verified recovery. An operator outcome is useful evidence for a single investigation. Measuring accuracy requires independent review and a recorded sampling policy.
+
+A shared deployment would need authenticated identities, authorization on every project/run/evidence/action, tenant-scoped credentials and storage, secret rotation, and a provider egress policy. Multiple worker processes would also need renewable job leases and fencing so that an expired owner cannot write effects. Recheck these boundaries with representative incidents and repeated failures before accepting shared deployment.
+
 ## Deliberate non-goals for this beta
 
 Multi-user authentication/tenancy, public-network deployment, arbitrary autonomous remediation, broad shell access, cluster orchestration, organization-scale RAG, and provider-agnostic compatibility are not implied by this release. Complete offline LLM inference is not provided by a local embedding model.

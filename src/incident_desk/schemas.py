@@ -6,6 +6,9 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from incident_desk.cloud_policy import CloudPolicy
+from incident_desk.knowledge.retrieval_config import RetrievalConfig
+
 
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -23,6 +26,8 @@ class RunInput(StrictModel):
     parent_run_id: str | None = Field(default=None, min_length=1, max_length=100)
     knowledge_generation: str | None = Field(default=None, min_length=1, max_length=100)
     retrieval_mode: Literal["lexical", "dense", "hybrid"] | None = None
+    retrieval_config: RetrievalConfig | None = None
+    cloud_policy: CloudPolicy | None = None
     start: datetime
     end: datetime
 

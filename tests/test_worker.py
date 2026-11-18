@@ -320,7 +320,7 @@ async def test_terminal_runs_release_clients_and_session_before_worker_shutdown(
 
     worker.release = release
     await worker.run(once=True)
-    assert released == [first_id, second["id"]]
+    assert sorted(released) == sorted([first_id, second["id"]])
     assert worker.sessions == worker.models_by_run == {}
     assert worker.models == []
 

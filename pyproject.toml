@@ -1,6 +1,6 @@
 [project]
 name = "incident-desk"
-version = "0.3.0b1"
+version = "0.4.0b1"
 description = "Local service incident diagnosis and evidence workbench"
 license = "Apache-2.0"
 license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md", "third_party/licenses/*.txt"]

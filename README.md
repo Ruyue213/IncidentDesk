@@ -19,7 +19,7 @@ Download the wheel and `incidentdesk-constraints.txt` from this repository's **R
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-python -m pip install --constraint ./incidentdesk-constraints.txt ./incident_desk-0.3.0b1-py3-none-any.whl
+python -m pip install --constraint ./incidentdesk-constraints.txt ./incident_desk-0.4.0b1-py3-none-any.whl
 incidentdesk doctor
 incidentdesk serve
 ```
@@ -47,7 +47,7 @@ Knowledge is scoped to a registered project and explicitly selected Markdown/tex
 Retrieval supports lexical BM25, local dense cosine search, and hybrid reciprocal-rank fusion. The optional dense model is `intfloat/multilingual-e5-small`, fixed to revision `fd1525a9fd15316a2d503bf26ab031a61d056e98`, with 384-dimensional normalized vectors and E5 query/passage prefixes. Inference stays local and does not download weights on demand. Install it explicitly:
 
 ```sh
-python -m pip install --constraint ./incidentdesk-constraints.txt './incident_desk-0.3.0b1-py3-none-any.whl[rag]'
+python -m pip install --constraint ./incidentdesk-constraints.txt './incident_desk-0.4.0b1-py3-none-any.whl[rag]'
 incidentdesk embeddings status
 incidentdesk embeddings download
 ```
@@ -55,6 +55,19 @@ incidentdesk embeddings download
 The extra installs PyTorch and sentence-transformers; the explicit download retrieves roughly 470 MB of public model files. The model has its own upstream license. This does not make cloud diagnosis offline: selected retrieved passages can still be sent to the configured LLM.
 
 Register `knowledge_paths` and `retrieval_mode` in project settings, save the project, then use its knowledge panel to explicitly build an index and try a query. The same operations are available through `POST /api/projects/{id}/knowledge/index` and `/knowledge/search`. The panel also exposes historical samples and the registered business probe. These checks work independently of the LLM. Missing local embeddings produce a reported degradation; a lexical result must not be described as an active hybrid index. These bounded local indexes target project runbooks, not organization-scale document search.
+
+By default, the pipeline takes up to 50 candidates per channel, keeps 20 after fusion, and returns up to five passages after document diversity selection. The project editor exposes those three limits. A new run freezes the retrieval policy, model revision, and index generation. Rebuild the index after saving a project revision. Install and enable the optional multilingual Cross-Encoder using the same `rag` dependency group:
+
+```sh
+incidentdesk reranker status
+incidentdesk reranker download
+```
+
+The model scores each query and candidate passage together. Scoring runs in a bounded local process and falls back to the original ranking when the model is missing, busy, or exceeds its deadline. It is opt-in. The task's local retrieval record retains candidate ranks and scores without candidate text. See [the frozen reranking protocol](evals/retrieval-v2/README.md).
+
+The worker runs two tasks concurrently by default. Set `INCIDENT_DESK_WORKER_CONCURRENCY` to 1–8 before starting the worker. The UI shows the running, queued and waiting-for-approval counts. A single process owns the local queue, and approved changes to the same project run one at a time.
+
+When a real-project task ends, run the saved read-only business check from its **Operator review and business outcome** panel. The result is saved to the task as evidence. Record diagnosis and recovery assessments separately, with the relevant citations. You can download local aggregate counts with annotation coverage and attempts from the same panel.
 
 ## What closes the engineering loop
 
@@ -104,7 +117,7 @@ uv run --frozen --extra rag pytest -q
 npm test --prefix frontend
 uv build --out-dir dist
 uv export --frozen --all-extras --no-dev --no-emit-project --no-hashes --output-file dist/incidentdesk-constraints.txt
-uv run --frozen --extra rag python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
+uv run --frozen --extra rag python scripts/check_release.py --wheel dist/incident_desk-0.4.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
 ```
 
 The release check creates a fresh virtual environment and unrelated working directory, installs the wheel, serves its bundled UI, registers a synthetic project, completes a scripted task, and verifies stop/backup/restore. It does not call a provider or touch an existing service. CI performs offline-model checks on Linux and macOS; paid model validation and target-specific service integration are separate, explicit checks. An unexecuted CI workflow is not evidence that a platform passed.

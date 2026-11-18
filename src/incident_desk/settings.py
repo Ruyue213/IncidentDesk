@@ -22,6 +22,9 @@ class Settings(BaseSettings):
         default="https://api.deepseek.com", validation_alias="INCIDENT_DESK_BASE_URL"
     )
     local_dir: Path = Field(default_factory=default_home, validation_alias="INCIDENT_DESK_HOME")
+    worker_concurrency: int = Field(
+        default=2, ge=1, le=8, validation_alias="INCIDENT_DESK_WORKER_CONCURRENCY"
+    )
     # Legacy defaults keep the offline fixtures reproducible. New model profiles
     # have their own, larger defaults and are frozen for each submitted run.
     max_output_tokens: int = Field(default=1500, ge=1, le=16384)

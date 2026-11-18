@@ -1,6 +1,7 @@
 """Fixed DeepSeek adapter, async-only, with every request durably metered."""
 
 import asyncio
+import copy
 import time
 from typing import Any
 
@@ -10,6 +11,7 @@ from langchain_deepseek import ChatDeepSeek
 from pydantic import PrivateAttr
 
 from incident_desk.agent.budget import CallLedger
+from incident_desk.cloud_policy import guard_payload
 from incident_desk.observability import logger
 from incident_desk.settings import Settings
 
@@ -28,8 +30,12 @@ class MeteredDeepSeek(ChatDeepSeek):
     _ledger: CallLedger = PrivateAttr()
     _run_id: str = PrivateAttr()
     _scope: str = PrivateAttr()
+    _wire_lock: asyncio.Lock = PrivateAttr(default_factory=asyncio.Lock)
+    _prepared_payload: dict | None = PrivateAttr(default=None)
 
     def _get_request_payload(self, input_, *, stop=None, **kwargs):
+        if self._prepared_payload is not None:
+            return copy.deepcopy(self._prepared_payload)
         payload = super()._get_request_payload(input_, stop=stop, **kwargs)
         if thinking_enabled(payload):
             choice = payload.get("tool_choice")
@@ -74,13 +80,27 @@ class MeteredDeepSeek(ChatDeepSeek):
         yield  # pragma: no cover - preserve the async iterator protocol
 
     async def _agenerate(self, messages, stop=None, run_manager=None, **kwargs):
+        async with self._wire_lock:
+            try:
+                return await self._metered_generate(messages, stop, run_manager, **kwargs)
+            finally:
+                self._prepared_payload = None
+
+    async def _metered_generate(self, messages, stop=None, run_manager=None, **kwargs):
         payload = self._get_request_payload(messages, stop=stop, **kwargs)
+        payload = await asyncio.to_thread(
+            guard_payload, self._ledger.settings, self._run_id, payload, audit=True
+        )
+        # The exact sanitized payload is used both for budget accounting and
+        # the provider's later serialization; no raw-message rebuild may escape it.
+        self._prepared_payload = payload
         adaptations = (
             ["thinking_required_to_auto"]
             if thinking_enabled(payload) and kwargs.get("tool_choice") == "required"
             else []
         )
-        call_id = self._ledger.reserve(
+        call_id = await asyncio.to_thread(
+            self._ledger.reserve,
             self._run_id,
             self._scope,
             self.model_name,
@@ -103,7 +123,8 @@ class MeteredDeepSeek(ChatDeepSeek):
             message = result.generations[0].message
             if adaptations:
                 message.response_metadata["incidentdesk_wire_adaptations"] = adaptations
-            self._ledger.finish(
+            await asyncio.to_thread(
+                self._ledger.finish,
                 call_id,
                 status="SUCCEEDED",
                 duration=time.monotonic() - start,
@@ -113,7 +134,8 @@ class MeteredDeepSeek(ChatDeepSeek):
             )
             return result
         except BaseException as error:
-            self._ledger.finish(
+            await asyncio.to_thread(
+                self._ledger.finish,
                 call_id,
                 status="FAILED",
                 duration=time.monotonic() - start,

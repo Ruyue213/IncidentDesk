@@ -1,0 +1,106 @@
+{
+  "version": "retrieval-v2-protocol-v1",
+  "synthetic": true,
+  "authorship": "Original authored synthetic runbooks and labels, not copied from user projects or v1 inputs. The same development collaborator authored both sets; this is not independently blinded human evaluation.",
+  "group_split": "Mechanism groups are disjoint across development and acceptance; all frozen corpus documents are candidates for both. No v1 query or previously inspected holdout is reused.",
+  "groups": [
+    {
+      "id": "connection_admission",
+      "split": "development",
+      "relevant_path": "corpus/note-001.md",
+      "hard_negative_path": "corpus/note-002.md"
+    },
+    {
+      "id": "downstream_deadline",
+      "split": "development",
+      "relevant_path": "corpus/note-003.md",
+      "hard_negative_path": "corpus/note-004.md"
+    },
+    {
+      "id": "tenant_quota",
+      "split": "development",
+      "relevant_path": "corpus/note-005.md",
+      "hard_negative_path": "corpus/note-006.md"
+    },
+    {
+      "id": "wal_storage_pressure",
+      "split": "development",
+      "relevant_path": "corpus/note-007.md",
+      "hard_negative_path": "corpus/note-008.md"
+    },
+    {
+      "id": "wall_clock_jump",
+      "split": "development",
+      "relevant_path": "corpus/note-009.md",
+      "hard_negative_path": "corpus/note-010.md"
+    },
+    {
+      "id": "certificate_chain",
+      "split": "development",
+      "relevant_path": "corpus/note-011.md",
+      "hard_negative_path": "corpus/note-012.md"
+    },
+    {
+      "id": "queue_visibility_lease",
+      "split": "acceptance",
+      "relevant_path": "corpus/note-013.md",
+      "hard_negative_path": "corpus/note-014.md"
+    },
+    {
+      "id": "transaction_lock_owner",
+      "split": "acceptance",
+      "relevant_path": "corpus/note-015.md",
+      "hard_negative_path": "corpus/note-016.md"
+    },
+    {
+      "id": "cache_namespace_rollout",
+      "split": "acceptance",
+      "relevant_path": "corpus/note-017.md",
+      "hard_negative_path": "corpus/note-018.md"
+    },
+    {
+      "id": "asynchronous_replica_visibility",
+      "split": "acceptance",
+      "relevant_path": "corpus/note-019.md",
+      "hard_negative_path": "corpus/note-020.md"
+    },
+    {
+      "id": "resolver_stale_endpoint",
+      "split": "acceptance",
+      "relevant_path": "corpus/note-021.md",
+      "hard_negative_path": "corpus/note-022.md"
+    },
+    {
+      "id": "loopback_proxy_routing",
+      "split": "acceptance",
+      "relevant_path": "corpus/note-023.md",
+      "hard_negative_path": "corpus/note-024.md"
+    },
+    {
+      "id": "slow_consumer_backpressure",
+      "split": "acceptance",
+      "relevant_path": "corpus/note-025.md",
+      "hard_negative_path": "corpus/note-026.md"
+    },
+    {
+      "id": "cpu_budget_throttling",
+      "split": "acceptance",
+      "relevant_path": "corpus/note-027.md",
+      "hard_negative_path": "corpus/note-028.md"
+    }
+  ],
+  "planned_config": {
+    "candidate_n": 50,
+    "rerank_top_n": 20,
+    "top_k": 5,
+    "mode": "hybrid",
+    "rrf_k": 60,
+    "off": "RRF order, no CrossEncoder",
+    "on": "same candidate pool, local CrossEncoder; never silently count fallback as on"
+  },
+  "labels": "Exact source-character spans with integer grades 3/2. A chunk is relevant only when it contains the complete labeled quote in the labeled path, not merely the same document. Gold units mapping to no chunk invalidate the benchmark before model evaluation.",
+  "no_answer": "No abstention threshold is tuned on acceptance. Raw ranking is not an answer. Report returned-evidence rate and correct empty retrieval separately for unanswerable queries; never treat an inference error as a correct abstention.",
+  "denominators": "Every planned query/mode stays in denominators. Strict mode-quality assigns zero to failed or degraded requests; report returned fallback quality separately. Answerable-only relevance metrics are secondary; no-answer metrics are always separate.",
+  "warm_measurement": "First query records cold model loading; rerun identical queries once after warm-up and retain both rankings/times. Cold/warm RSS reported separately and cannot establish a production SLA.",
+  "mutability": "Freeze all corpus, queries, span labels, mechanism groups and this protocol before first neural-model trial. Never adjust acceptance labels or parameters after viewing its results."
+}

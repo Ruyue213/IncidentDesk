@@ -70,7 +70,7 @@ jobs:
       - name: Export locked core dependency constraints
         run: uv export --frozen --all-extras --no-dev --no-emit-project --no-hashes --output-file dist/incidentdesk-constraints.txt
       - name: Install and run wheel outside the checkout
-        run: uv run --frozen python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
+        run: uv run --frozen python scripts/check_release.py --wheel dist/incident_desk-0.4.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
       - name: Preserve checked distribution artifacts
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4

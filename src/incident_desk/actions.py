@@ -22,6 +22,7 @@ from incident_desk.process_identity import (
     process_has_exited,
     terminate_owned_child,
 )
+from incident_desk.project_actions import project_action_lock
 from incident_desk.projects import ProjectStore, safe_project_path
 from incident_desk.schemas import ServiceActionRequest
 from incident_desk.storage.repository import Conflict
@@ -308,6 +309,12 @@ class ActionExecutor:
             log.close()
 
     async def execute(self, run_request, run_id, params):
+        # Different diagnoses may investigate concurrently. Approved effects on
+        # one project serialize before claiming/revalidating their frozen target.
+        async with project_action_lock(self.settings.local_dir, run_request.service_id):
+            return await self._execute_locked(run_request, run_id, params)
+
+    async def _execute_locked(self, run_request, run_id, params):
         operation, receipt, claimed = await self.repository.begin_service_action(run_id, params)
         if not claimed:
             if receipt["status"] == "STARTED":
@@ -421,23 +428,38 @@ class ActionExecutor:
                 }
             return await self.repository.finish_service_action(run_id, "SUCCEEDED", result)
         except asyncio.CancelledError:
-            await asyncio.shield(
-                self.repository.finish_service_action(
-                    run_id,
-                    "UNKNOWN" if effect_started else "FAILED",
-                    {"message": "Executor interrupted; action will not be automatically repeated"},
+            await finish_cleanup(
+                asyncio.create_task(
+                    self.repository.finish_service_action(
+                        run_id,
+                        "UNKNOWN" if effect_started else "FAILED",
+                        {
+                            "message": (
+                                "Executor interrupted; action will not be automatically repeated"
+                            )
+                        },
+                    )
                 )
             )
             raise
         except Exception as error:
-            return await self.repository.finish_service_action(
-                run_id,
-                "UNKNOWN" if effect_started else "FAILED",
-                {
-                    "error_type": type(error).__name__,
-                    "message": (
-                        "Action did not complete verification. "
-                        "Inspect actual process/file state; no automatic retry."
-                    ),
-                },
+            completion = asyncio.create_task(
+                self.repository.finish_service_action(
+                    run_id,
+                    "UNKNOWN" if effect_started else "FAILED",
+                    {
+                        "error_type": type(error).__name__,
+                        "message": (
+                            "Action did not complete verification. "
+                            "Inspect actual process/file state; no automatic retry."
+                        ),
+                    },
+                )
             )
+            try:
+                return await asyncio.shield(completion)
+            except asyncio.CancelledError:
+                # Keep the project mutex until the failure receipt is durable,
+                # then propagate cancellation so a graph cannot issue more calls.
+                await finish_cleanup(completion)
+                raise

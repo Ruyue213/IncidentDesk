@@ -8,6 +8,8 @@ export interface RunInput {
   model_profile_version?: number | null;
   knowledge_generation?: string | null;
   retrieval_mode?: 'lexical' | 'dense' | 'hybrid' | null;
+  retrieval_config?: RetrievalConfig | null;
+  cloud_policy?: CloudPolicy | null;
   parent_run_id?: string | null;
   start: string;
   end: string;
@@ -106,8 +108,18 @@ export interface ProjectProfile {
   start_argv: string[]; config_files: string[]; timezone: string; version: number; created_at: string;
   knowledge_paths?: string[];
   retrieval_mode?: 'lexical' | 'dense' | 'hybrid';
+  retrieval_config?: RetrievalConfig;
+  cloud_policy?: CloudPolicy;
   history_enabled?: boolean;
   business_probe?: BusinessProbeProfile | null;
+}
+export interface RetrievalConfig {
+  candidate_n: number; rerank_top_n: number; top_k: number; reranker: 'off' | 'cross_encoder';
+  policy_version?: string; reranker_fingerprint?: string;
+}
+export interface CloudPolicy {
+  mode: 'redacted' | 'deny'; allowed_origins: string[]; allow_source_code: boolean;
+  redact_literals: string[]; policy_version?: 'cloud-egress-v1';
 }
 export interface BusinessProbeProfile {
   method: 'GET' | 'POST'; path: string; body: Record<string, unknown>;
@@ -115,7 +127,13 @@ export interface BusinessProbeProfile {
 }
 export interface EvidenceBatch {
   status: string; items: EvidenceSnapshot[]; coverage?: Record<string, unknown>;
-  retrieval?: { requested_mode: string; effective_mode: string; latency_ms?: number };
+  retrieval?: {
+    requested_mode: string; effective_mode: string; latency_ms?: number;
+    config?: RetrievalConfig; phase_counts?: Record<string, number>;
+    stage_timings_ms?: Record<string, number>;
+    reranker?: { requested: string; effective: string; status: string; error?: { code?: string; message?: string } | null; pair_count?: number; latency_ms?: number };
+    hits?: { id: string; rank: number; scores: Record<string, number> }[];
+  };
   error?: { code?: string; message?: string } | string | null;
   [key: string]: unknown;
 }
@@ -124,6 +142,8 @@ export interface KnowledgeStatus {
   active_generation: string | null;
   generations: { generation: string; project_version: number; documents: number; chunks: number; created_at: string; embedding: { indexed: boolean; state: string; fingerprint: string } }[];
   model: { state: string; model_id: string; revision: string; download_required?: boolean };
+  reranker_model?: { state: string; model_id: string; revision: string; download_required?: boolean };
+  retrieval_config?: RetrievalConfig;
 }
 export type ProjectInput = Omit<ProjectProfile, 'version' | 'created_at'> & { expected_version?: number };
 export interface ProjectProbe {
@@ -146,9 +166,22 @@ export interface ModelTest {
   model_calls: number; known_cost_cny: number; unreconciled_reservations_cny: number; error_type?: string; message: string;
 }
 export interface Readiness {
-  api: 'ready'; worker: { status: 'ready' | 'stale' | 'unavailable'; pid?: number; at?: string; age_seconds?: number; mode?: 'live' | 'offline' };
+  api: 'ready'; worker: { status: 'ready' | 'stale' | 'stopping' | 'unavailable'; pid?: number; at?: string; age_seconds?: number; mode?: 'live' | 'offline'; capacity?: number; active_count?: number; queued_count?: number; waiting_approval_count?: number };
   sampler?: { status: 'ready' | 'degraded' | 'error' | 'idle' | 'stale' | 'unavailable'; counts?: Record<string, number>; age_seconds?: number };
   model: { status: 'configured' | 'unconfigured'; active_version?: number; note: string }; projects: number;
+}
+export interface OutcomeInput {
+  diagnosis_assessment: 'confirmed' | 'rejected' | 'inconclusive'; diagnosis_reason: string;
+  recovery_assessment: 'verified' | 'failed' | 'not_attempted'; recovery_reason: string;
+  verification_references: Reference[]; expected_revision: number;
+}
+export interface Outcome extends Omit<OutcomeInput, 'expected_revision'> { revision: number; created_at: string; source: 'operator_supplied'; }
+export interface OutcomeAggregate {
+  terminal_runs: number;
+  annotated_runs: number;
+  diagnosis_assessments: Record<OutcomeInput['diagnosis_assessment'], number>;
+  recovery_assessments: Record<OutcomeInput['recovery_assessment'], number>;
+  attempted_recovery_annotations: number;
 }
 export interface ActionReceipt {
   operation_id: string; run_id: string; status: 'STARTED' | 'SUCCEEDED' | 'FAILED' | 'UNKNOWN'; created_at?: string; updated_at?: string;

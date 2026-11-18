@@ -1,5 +1,5 @@
 import type {
-  ApprovalPayload, BusinessEvent, EvidenceBatch, EvidenceSnapshot, Incident, KnowledgeStatus, ModelInput, ModelSettings, ModelTest, Operation, ProjectInput, ProjectProbe, ProjectProfile, Readiness, Run, RunInput,
+  ApprovalPayload, BusinessEvent, EvidenceBatch, EvidenceSnapshot, Incident, KnowledgeStatus, ModelInput, ModelSettings, ModelTest, Operation, Outcome, OutcomeAggregate, OutcomeInput, ProjectInput, ProjectProbe, ProjectProfile, Readiness, Run, RunInput,
 } from './types.ts';
 
 export class ApiError extends Error {
@@ -30,7 +30,7 @@ export const api = {
   probeProject: (id: string) => request<ProjectProbe>(`/api/projects/${encodeURIComponent(id)}/probe`, { method: 'POST' }),
   knowledge: (id: string) => request<KnowledgeStatus>(`/api/projects/${encodeURIComponent(id)}/knowledge`),
   indexKnowledge: (id: string, version: number) => request<{ generation: string; chunks: number }>(`/api/projects/${encodeURIComponent(id)}/knowledge/index`, { method: 'POST', body: JSON.stringify({ project_version: version, embed: true }) }),
-  searchKnowledge: (id: string, generation: string, query: string, mode: string) => request<EvidenceBatch>(`/api/projects/${encodeURIComponent(id)}/knowledge/search`, { method: 'POST', body: JSON.stringify({ generation, query, mode, top_k: 5 }) }),
+  searchKnowledge: (id: string, generation: string, query: string, mode: string, version?: number) => request<EvidenceBatch>(`/api/projects/${encodeURIComponent(id)}/knowledge/search`, { method: 'POST', body: JSON.stringify({ generation, query, mode, ...(version ? { project_version: version } : {}) }) }),
   sampleProject: (id: string) => request<Record<string, unknown>>(`/api/projects/${encodeURIComponent(id)}/sample`, { method: 'POST' }),
   observations: (id: string, version: number, start: string, end: string) => request<EvidenceBatch>(`/api/projects/${encodeURIComponent(id)}/observations?${new URLSearchParams({ version: String(version), start, end, limit: '100' })}`),
   businessProbe: (id: string) => request<EvidenceBatch>(`/api/projects/${encodeURIComponent(id)}/probe-business`, { method: 'POST' }),
@@ -49,5 +49,12 @@ export const api = {
   cancel: (id: string) => request<Run>(`${runPath(id)}/cancel`, { method: 'POST' }),
   events: (id: string, cursor: number, signal?: AbortSignal) => request<{ items: BusinessEvent[]; next_cursor: number }>(`${runPath(id)}/events?after=${cursor}&limit=200`, { signal }),
   evidence: (id: string, evidenceId: string, signal?: AbortSignal) => request<EvidenceSnapshot>(`${runPath(id)}/evidence/${encodeURIComponent(evidenceId)}`, { signal }),
+  outcome: (id: string) => request<{ outcome: Outcome | null }>(`${runPath(id)}/outcome`),
+  saveOutcome: (id: string, body: OutcomeInput) => request<{ outcome: Outcome }>(`${runPath(id)}/outcome`, { method: 'POST', body: JSON.stringify(body) }),
+  outcomeAggregate: () => request<OutcomeAggregate>('/api/outcomes/aggregate?mode=live'),
+  businessVerifications: (id: string) => request<{ items: EvidenceSnapshot[] }>(`${runPath(id)}/verify-business`),
+  verifyBusiness: (id: string) => request<EvidenceBatch>(`${runPath(id)}/verify-business`, { method: 'POST' }),
+  retrievalTrace: (id: string) => request<Record<string, unknown>[]>(`${runPath(id)}/retrieval`),
+  cloudAudit: (id: string) => request<{ items: Record<string, unknown>[] }>(`${runPath(id)}/cloud-audit`),
   streamPath: (id: string, cursor: number) => `${runPath(id)}/events/stream?cursor=${cursor}`,
 };

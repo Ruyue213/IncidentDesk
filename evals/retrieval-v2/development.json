@@ -1,0 +1,702 @@
+{
+  "version": "retrieval-v2-original-2026-11",
+  "split": "development",
+  "queries": [
+    {
+      "id": "development-001",
+      "mechanism_group": "connection_admission",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "In a POOL_ADMISSION_WAIT incident, which combination supports an admission bottleneck and what distinguishes slow queries?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "connection_admission-s1",
+          "path": "corpus/note-001.md",
+          "quote": "A smaller pool limit is a supported explanation only when active connections reach that limit, acquisition wait rises, and query duration remains near its earlier baseline.",
+          "start_char": 92,
+          "end_char": 264,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "connection_admission-s2",
+          "path": "corpus/note-001.md",
+          "quote": "Compare effective limits per instance and connection hold time before considering a supervised capacity change; a release timestamp alone does not establish causation.",
+          "start_char": 292,
+          "end_char": 459,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-002.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-002",
+      "mechanism_group": "connection_admission",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "Requests wait for a free database handle even though individual queries remain quick after a per-instance cap shrank. What should be checked before blaming the database?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "connection_admission-s1",
+          "path": "corpus/note-001.md",
+          "quote": "A smaller pool limit is a supported explanation only when active connections reach that limit, acquisition wait rises, and query duration remains near its earlier baseline.",
+          "start_char": 92,
+          "end_char": 264,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "connection_admission-s2",
+          "path": "corpus/note-001.md",
+          "quote": "Compare effective limits per instance and connection hold time before considering a supervised capacity change; a release timestamp alone does not establish causation.",
+          "start_char": 292,
+          "end_char": 459,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-002.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-003",
+      "mechanism_group": "connection_admission",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "连接池上限缩小后，活跃连接打满且获取连接排队，但单次查询耗时未变。什么证据支持容量限制，下一步核对什么？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "connection_admission-s1",
+          "path": "corpus/note-001.md",
+          "quote": "A smaller pool limit is a supported explanation only when active connections reach that limit, acquisition wait rises, and query duration remains near its earlier baseline.",
+          "start_char": 92,
+          "end_char": 264,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "connection_admission-s2",
+          "path": "corpus/note-001.md",
+          "quote": "Compare effective limits per instance and connection hold time before considering a supervised capacity change; a release timestamp alone does not establish causation.",
+          "start_char": 292,
+          "end_char": 459,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-002.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-004",
+      "mechanism_group": "connection_admission",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "What exact pool size and monetary purchase budget does our organization approve for next quarter?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-001.md",
+        "corpus/note-002.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "development-005",
+      "mechanism_group": "downstream_deadline",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "For DEPENDENCY_DEADLINE with stable local work, what identifies remote response delay and which phase must be separated?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "downstream_deadline-s1",
+          "path": "corpus/note-003.md",
+          "quote": "An upstream timeout is supported when the same dependency path has rising client latency and deadline errors while local queue and database timings stay stable.",
+          "start_char": 92,
+          "end_char": 252,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "downstream_deadline-s2",
+          "path": "corpus/note-003.md",
+          "quote": "Separate connection establishment from response wait, compare the downstream path across instances, and inspect retry amplification before assigning ownership.",
+          "start_char": 280,
+          "end_char": 439,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-004.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-006",
+      "mechanism_group": "downstream_deadline",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "The application spends little time on its own work, but one outbound dependency becomes slow and requests expire. How can the waiting phase and repeated attempts be verified?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "downstream_deadline-s1",
+          "path": "corpus/note-003.md",
+          "quote": "An upstream timeout is supported when the same dependency path has rising client latency and deadline errors while local queue and database timings stay stable.",
+          "start_char": 92,
+          "end_char": 252,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "downstream_deadline-s2",
+          "path": "corpus/note-003.md",
+          "quote": "Separate connection establishment from response wait, compare the downstream path across instances, and inspect retry amplification before assigning ownership.",
+          "start_char": 280,
+          "end_char": 439,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-004.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-007",
+      "mechanism_group": "downstream_deadline",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "应用本地处理很快，只有一个下游调用变慢并触发超时。应如何区分建连、等待响应和重试放大？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "downstream_deadline-s1",
+          "path": "corpus/note-003.md",
+          "quote": "An upstream timeout is supported when the same dependency path has rising client latency and deadline errors while local queue and database timings stay stable.",
+          "start_char": 92,
+          "end_char": 252,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "downstream_deadline-s2",
+          "path": "corpus/note-003.md",
+          "quote": "Separate connection establishment from response wait, compare the downstream path across instances, and inspect retry amplification before assigning ownership.",
+          "start_char": 280,
+          "end_char": 439,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-004.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-008",
+      "mechanism_group": "downstream_deadline",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "Which customer contracts allow changing the external provider deadline without legal approval?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-003.md",
+        "corpus/note-004.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "development-009",
+      "mechanism_group": "tenant_quota",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "Which ACCOUNT_RATE_LIMIT evidence distinguishes provider quota exhaustion from caller-side rejection?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "tenant_quota-s1",
+          "path": "corpus/note-005.md",
+          "quote": "Provider-side rate limiting is supported by dependency responses carrying 429 and Retry-After, normal local saturation indicators, and a changed shared-account allowance.",
+          "start_char": 91,
+          "end_char": 261,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "tenant_quota-s2",
+          "path": "corpus/note-005.md",
+          "quote": "Inspect the account-wide consumers and their retry delays; the application returning a 429 does not by itself show which side imposed the limit.",
+          "start_char": 289,
+          "end_char": 433,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-006.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-010",
+      "mechanism_group": "tenant_quota",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "Several callers share an allowance and the remote endpoint returns a backoff hint while local capacity is quiet. Which scope of consumption should be investigated?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "tenant_quota-s1",
+          "path": "corpus/note-005.md",
+          "quote": "Provider-side rate limiting is supported by dependency responses carrying 429 and Retry-After, normal local saturation indicators, and a changed shared-account allowance.",
+          "start_char": 91,
+          "end_char": 261,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "tenant_quota-s2",
+          "path": "corpus/note-005.md",
+          "quote": "Inspect the account-wide consumers and their retry delays; the application returning a 429 does not by itself show which side imposed the limit.",
+          "start_char": 289,
+          "end_char": 433,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-006.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-011",
+      "mechanism_group": "tenant_quota",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "多个调用方共享配额，下游返回429及等待提示，本地容量正常。怎样判断限流方向并检查共享账户用量？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "tenant_quota-s1",
+          "path": "corpus/note-005.md",
+          "quote": "Provider-side rate limiting is supported by dependency responses carrying 429 and Retry-After, normal local saturation indicators, and a changed shared-account allowance.",
+          "start_char": 91,
+          "end_char": 261,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "tenant_quota-s2",
+          "path": "corpus/note-005.md",
+          "quote": "Inspect the account-wide consumers and their retry delays; the application returning a 429 does not by itself show which side imposed the limit.",
+          "start_char": 289,
+          "end_char": 433,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-006.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-012",
+      "mechanism_group": "tenant_quota",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "What is the current paid subscription balance of the remote vendor account?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-005.md",
+        "corpus/note-006.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "development-013",
+      "mechanism_group": "wal_storage_pressure",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "What WAL_FSYNC_BACKLOG combination supports a storage regression instead of a larger import?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "wal_storage_pressure-s1",
+          "path": "corpus/note-007.md",
+          "quote": "Durability pressure is supported when WAL flush duration and disk queue depth rise together while transaction work and incoming write rate remain stable.",
+          "start_char": 90,
+          "end_char": 243,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "wal_storage_pressure-s2",
+          "path": "corpus/note-007.md",
+          "quote": "Compare free space, device latency and flush completion timestamps; do not delete the active journal to improve a dashboard counter.",
+          "start_char": 271,
+          "end_char": 403,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-008.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-014",
+      "mechanism_group": "wal_storage_pressure",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "The workload has not grown but durable commits slow down alongside a busy storage queue. What should be compared before touching journal files?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "wal_storage_pressure-s1",
+          "path": "corpus/note-007.md",
+          "quote": "Durability pressure is supported when WAL flush duration and disk queue depth rise together while transaction work and incoming write rate remain stable.",
+          "start_char": 90,
+          "end_char": 243,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "wal_storage_pressure-s2",
+          "path": "corpus/note-007.md",
+          "quote": "Compare free space, device latency and flush completion timestamps; do not delete the active journal to improve a dashboard counter.",
+          "start_char": 271,
+          "end_char": 403,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-008.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-015",
+      "mechanism_group": "wal_storage_pressure",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "写入流量不变，提交变慢且磁盘队列、日志刷盘耗时一起上升。怎样区分设备退化和批量导入造成的需求变化？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "wal_storage_pressure-s1",
+          "path": "corpus/note-007.md",
+          "quote": "Durability pressure is supported when WAL flush duration and disk queue depth rise together while transaction work and incoming write rate remain stable.",
+          "start_char": 90,
+          "end_char": 243,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "wal_storage_pressure-s2",
+          "path": "corpus/note-007.md",
+          "quote": "Compare free space, device latency and flush completion timestamps; do not delete the active journal to improve a dashboard counter.",
+          "start_char": 271,
+          "end_char": 403,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-008.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-016",
+      "mechanism_group": "wal_storage_pressure",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "Which disk serial number is covered by our private hardware replacement contract?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-007.md",
+        "corpus/note-008.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "development-017",
+      "mechanism_group": "wall_clock_jump",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "For CLOCK_OFFSET_STEP, how do stable monotonic durations distinguish premature expiry from slow processing?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "wall_clock_jump-s1",
+          "path": "corpus/note-009.md",
+          "quote": "A clock-related expiry problem is supported by an abrupt wall-clock offset, clustered token expiry failures, and stable monotonic request durations.",
+          "start_char": 90,
+          "end_char": 238,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "wall_clock_jump-s2",
+          "path": "corpus/note-009.md",
+          "quote": "Compare time synchronization events and wall-clock versus monotonic timestamps before changing token lifetimes; absence of an expiry log does not prove synchronized clocks.",
+          "start_char": 266,
+          "end_char": 438,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-010.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-018",
+      "mechanism_group": "wall_clock_jump",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "Credentials suddenly appear too old even though elapsed request work has not increased. Which two clocks and synchronization events should be contrasted?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "wall_clock_jump-s1",
+          "path": "corpus/note-009.md",
+          "quote": "A clock-related expiry problem is supported by an abrupt wall-clock offset, clustered token expiry failures, and stable monotonic request durations.",
+          "start_char": 90,
+          "end_char": 238,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "wall_clock_jump-s2",
+          "path": "corpus/note-009.md",
+          "quote": "Compare time synchronization events and wall-clock versus monotonic timestamps before changing token lifetimes; absence of an expiry log does not prove synchronized clocks.",
+          "start_char": 266,
+          "end_char": 438,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-010.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-019",
+      "mechanism_group": "wall_clock_jump",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "凭证突然成批过期，但实际经过的请求时间没有增加。应如何对比墙上时钟、单调时钟与校时事件？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "wall_clock_jump-s1",
+          "path": "corpus/note-009.md",
+          "quote": "A clock-related expiry problem is supported by an abrupt wall-clock offset, clustered token expiry failures, and stable monotonic request durations.",
+          "start_char": 90,
+          "end_char": 238,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "wall_clock_jump-s2",
+          "path": "corpus/note-009.md",
+          "quote": "Compare time synchronization events and wall-clock versus monotonic timestamps before changing token lifetimes; absence of an expiry log does not prove synchronized clocks.",
+          "start_char": 266,
+          "end_char": 438,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-010.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-020",
+      "mechanism_group": "wall_clock_jump",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "What is the correct production signing key for generating replacement tokens?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-009.md",
+        "corpus/note-010.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "development-021",
+      "mechanism_group": "certificate_chain",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "Which TLS_CHAIN_REJECT evidence separates trust-chain failure from an HTTP authorization rejection?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "certificate_chain-s1",
+          "path": "corpus/note-011.md",
+          "quote": "A trust-chain failure is supported when handshake verification fails before an HTTP response and the deployed certificate chain differs from the client trust store.",
+          "start_char": 89,
+          "end_char": 253,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "certificate_chain-s2",
+          "path": "corpus/note-011.md",
+          "quote": "Inspect certificate validity and intermediate-chain presentation separately from HTTP authorization; do not disable verification as a diagnosis shortcut.",
+          "start_char": 281,
+          "end_char": 434,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-012.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-022",
+      "mechanism_group": "certificate_chain",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "The connection is rejected before any HTTP status is available after certificate rotation. What should be compared without switching off verification?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "certificate_chain-s1",
+          "path": "corpus/note-011.md",
+          "quote": "A trust-chain failure is supported when handshake verification fails before an HTTP response and the deployed certificate chain differs from the client trust store.",
+          "start_char": 89,
+          "end_char": 253,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "certificate_chain-s2",
+          "path": "corpus/note-011.md",
+          "quote": "Inspect certificate validity and intermediate-chain presentation separately from HTTP authorization; do not disable verification as a diagnosis shortcut.",
+          "start_char": 281,
+          "end_char": 434,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-012.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-023",
+      "mechanism_group": "certificate_chain",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "证书轮换后尚未收到HTTP状态就握手失败。如何检查信任链与中间证书，而不是把问题当成接口鉴权？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "certificate_chain-s1",
+          "path": "corpus/note-011.md",
+          "quote": "A trust-chain failure is supported when handshake verification fails before an HTTP response and the deployed certificate chain differs from the client trust store.",
+          "start_char": 89,
+          "end_char": 253,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "certificate_chain-s2",
+          "path": "corpus/note-011.md",
+          "quote": "Inspect certificate validity and intermediate-chain presentation separately from HTTP authorization; do not disable verification as a diagnosis shortcut.",
+          "start_char": 281,
+          "end_char": 434,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-012.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "development-024",
+      "mechanism_group": "certificate_chain",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "Where is the secret passphrase for our private certificate archive stored?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-011.md",
+        "corpus/note-012.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    }
+  ]
+}

@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from incident_desk.knowledge.project_store import KnowledgeIndexBusy, ProjectKnowledgeStore
+from incident_desk.knowledge.retrieval_config import RetrievalConfig
 from incident_desk.projects import ProjectNotFound, ProjectStore
 
 
@@ -20,7 +21,9 @@ class SearchInput(BaseModel):
     query: str = Field(min_length=1, max_length=1000)
     generation: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     mode: str = Field(default="hybrid", pattern=r"^(lexical|dense|hybrid)$")
-    top_k: int = Field(default=5, ge=1, le=10)
+    top_k: int | None = Field(default=None, ge=1, le=10)
+    retrieval_config: RetrievalConfig | None = None
+    project_version: int | None = Field(default=None, ge=1)
 
     @field_validator("query")
     @classmethod
@@ -63,6 +66,12 @@ def create_knowledge_router(settings, projects=None, knowledge=None):
             knowledge.active_generation, project_id, current.version
         )
         result["project_version"] = current.version
+        result["retrieval_config"] = current.retrieval_config.model_dump(mode="json")
+        from incident_desk.knowledge.reranker import LocalCrossEncoder
+
+        result["reranker_model"] = await asyncio.to_thread(
+            LocalCrossEncoder(settings.local_dir).status
+        )
         return result
 
     @router.post("/index")
@@ -86,11 +95,26 @@ def create_knowledge_router(settings, projects=None, knowledge=None):
     async def search(project_id: str, request: Request):
         body = await _input(request, SearchInput)
         current = project(project_id)
+        if body.project_version is not None and body.project_version != current.version:
+            raise HTTPException(409, "Project changed; reload before searching")
         generation = body.generation or await asyncio.to_thread(
             knowledge.active_generation, project_id, current.version
         )
+        config = body.retrieval_config or current.retrieval_config
+        if body.top_k is not None:
+            try:
+                config = RetrievalConfig.model_validate(config.model_dump() | {"top_k": body.top_k})
+            except ValueError:
+                raise HTTPException(
+                    422, "Final result count exceeds the rerank candidate budget"
+                ) from None
         return await asyncio.to_thread(
-            knowledge.search, project_id, generation, body.query, mode=body.mode, top_k=body.top_k
+            knowledge.search,
+            project_id,
+            generation,
+            body.query,
+            mode=body.mode,
+            retrieval_config=config,
         )
 
     return router
