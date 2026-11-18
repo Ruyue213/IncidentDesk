@@ -40,6 +40,8 @@ async function workspace(runs = [], options = {}) {
     else if (path.endsWith('/events/stream')) return route.fulfill({ contentType: 'text/event-stream', body: '' });
     else if (path.endsWith('/events')) response = { items: [], next_cursor: 0 };
     else if (path.endsWith('/resume')) response = { accepted: true, operation: runs[0]?.operation };
+    else if (path.endsWith('/outcome')) response = { outcome: null };
+    else if (path.endsWith('/verify-business')) response = { items: [] };
     else if (path.includes('/evidence/')) response = { ...reference, content: 'upstream timed out', source: 'logs' };
     else if (path.startsWith('/api/runs/')) response = runs.find((item) => path.endsWith(item.id)) || makeRun({ id: 'new-run', status: 'QUEUED', operation: null });
     else return route.fulfill({ status: 404, contentType: 'application/json', body: '{"detail":"unmocked endpoint"}' });
@@ -70,6 +72,66 @@ test('new tasks default to real project and a 30 minute window, without selectin
     assert.equal(sent.project_version, 2); assert.equal(sent.model_profile_version, 3);
     assert.equal(sent.service_id, 'socialengine'); assert.equal(sent.parent_run_id, null);
   } finally { await browser.close(); }
+});
+
+test('saved retrieval and cloud settings are used for project searches', async () => {
+  const { browser, page, calls } = await workspace([], {
+    route({ path, method, body }) {
+      if (path === '/api/projects/socialengine' && method === 'PUT') {
+        return { ...body, version: 3, created_at: project.created_at };
+      }
+    },
+  });
+  try {
+    await page.getByRole('button', { name: '项目设置', exact: true }).click();
+    await page.getByLabel('编辑项目').selectOption(project.id);
+    await page.getByLabel('每路召回候选数').fill('30');
+    await page.getByLabel('重排候选数').fill('12');
+    await page.getByLabel('最终片段数').fill('4');
+    await page.getByLabel('候选重排').selectOption('cross_encoder');
+    await page.getByText('云端数据发送规则', { exact: true }).click();
+    await page.getByLabel('云端诊断策略').selectOption('deny');
+    await page.getByRole('button', { name: '保存项目配置' }).click();
+    await page.getByText('已保存项目 v3 · 知识库与运行历史').waitFor();
+    const save = calls.find(({ method, path }) => method === 'PUT' && path === '/api/projects/socialengine');
+    assert.deepEqual(save.body.retrieval_config, { candidate_n: 30, rerank_top_n: 12, top_k: 4, reranker: 'cross_encoder' });
+    assert.equal(save.body.cloud_policy.mode, 'deny');
+    await page.getByLabel('知识库试检索').fill('队列饱和');
+    await page.getByRole('button', { name: '检索已冻结知识版本' }).click();
+    const search = calls.find(({ path }) => path.endsWith('/knowledge/search'));
+    assert.equal(search.body.project_version, 3);
+    assert.equal('top_k' in search.body, false);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('business verification attaches evidence before saving operator outcome', async () => {
+  const terminal = makeRun({ status: 'SUCCEEDED', operation: null });
+  const probe = { id: 'verified-probe', source: 'business_probe', version: 'v-probe', content: '{"business_ok": true}' };
+  const { page, calls, browser } = await workspace([terminal], {
+    route({ path, method, body }) {
+      if (path.endsWith('/verify-business') && method === 'POST') return { business_ok: true, items: [probe] };
+      if (path.endsWith('/outcome') && method === 'POST') return { outcome: { ...body, revision: 1 } };
+    },
+  });
+  try {
+    await page.getByRole('button', { name: '运行只读业务检查并保存证据' }).click();
+    await page.getByText('登记的业务断言通过。', { exact: false }).waitFor();
+    await page.getByText('尚未记录 · 填写本次核对', { exact: true }).click();
+    await page.getByLabel('诊断核对', { exact: true }).selectOption('inconclusive');
+    await page.getByLabel('诊断核对依据').fill('当前只确认业务断言通过');
+    await page.getByLabel('业务恢复', { exact: true }).selectOption('verified');
+    await page.getByLabel('业务核对依据').fill('登记断言与实际响应一致');
+    await page.getByRole('checkbox', { name: /business_ok/ }).check();
+    await page.getByRole('button', { name: '保存人工核对' }).click();
+    await page.getByText('已保存人工核对 v1', { exact: false }).waitFor();
+    const outcome = calls.find(({ path, method }) => path.endsWith('/outcome') && method === 'POST');
+    assert.deepEqual(outcome.body.verification_references, [{ id: 'verified-probe', version: 'v-probe', quote: '"business_ok": true' }]);
+    assert.equal(outcome.body.expected_revision, 0);
+  } finally {
+    await browser.close();
+  }
 });
 
 test('model secret input is write-only and discarded when settings close; unsaved config blocks tests', async () => {

@@ -1,5 +1,6 @@
 """Local model settings API. Keys are write-only; provider errors are sanitized."""
 
+import asyncio
 import json
 import uuid
 
@@ -98,7 +99,7 @@ async def test_model_connection(settings: Settings) -> dict:
         "message": "Model connection test did not complete.",
     }
     try:
-        model = make_model(bounded, run_id, scope="model-connection-test")
+        model = await asyncio.to_thread(make_model, bounded, run_id, scope="model-connection-test")
         bound = model.bind_tools([schema])
         question = HumanMessage(
             content=(

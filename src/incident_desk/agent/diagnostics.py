@@ -1,7 +1,10 @@
 """Evidence-bound diagnosis and the fixed-collection comparison baseline."""
 
+import asyncio
 import hashlib
 import json
+import sqlite3
+import threading
 import uuid
 from collections.abc import Awaitable, Callable
 from datetime import datetime
@@ -18,6 +21,7 @@ from incident_desk.agent.harness import build_harness, execution_step_limit
 from incident_desk.agent.models import make_model
 from incident_desk.agent.offline import EvidenceQuery
 from incident_desk.knowledge.store import KnowledgeStore
+from incident_desk.process_identity import finish_cleanup
 from incident_desk.runtime_paths import RESOURCE_ROOT
 from incident_desk.schemas import (
     Diagnosis,
@@ -109,6 +113,11 @@ class DiagnosticSession:
         self.trace: list[dict] = []
 
     async def remember(self, items: list[dict]) -> list[dict]:
+        if self.project:
+            from incident_desk.cloud_policy import redact_snapshot
+
+            policy = self.request.cloud_policy or self.project.cloud_policy
+            items = [redact_snapshot(item, policy) for item in items]
         normalized = [snapshot(item) for item in items]
         for item in normalized:
             if self.save_snapshot:
@@ -260,6 +269,12 @@ class DiagnosticSession:
         @tool
         async def read_project_file(path: str, offset: int = 0, limit: int = 200) -> dict:
             """Read bounded project text using a relative path. Secrets/unsafe paths are refused."""
+            if not (self.request.cloud_policy or self.project.cloud_policy).allow_source_code:
+                return {
+                    "status": "refused",
+                    "items": [],
+                    "error": {"code": "cloud_source_disabled"},
+                }
             try:
                 result = await self.evidence.read_file(path, offset, limit)
             except (ValueError, OSError) as error:
@@ -280,6 +295,12 @@ class DiagnosticSession:
         @tool
         async def search_project(query: str) -> dict:
             """Search bounded project source/docs and return citable snippets."""
+            if not (self.request.cloud_policy or self.project.cloud_policy).allow_source_code:
+                return {
+                    "status": "refused",
+                    "items": [],
+                    "error": {"code": "cloud_source_disabled"},
+                }
             try:
                 result = await self.evidence.search(query)
             except (ValueError, OSError) as error:
@@ -305,7 +326,7 @@ class DiagnosticSession:
             return result
 
         @tool
-        async def search_knowledge(query: str, top_k: int = 5) -> dict:
+        async def search_knowledge(query: str, top_k: int | None = None) -> dict:
             """Search this project's frozen runbook corpus using the bound retrieval mode.
 
             Knowledge is guidance, not runtime observation. Inspect retrieval status:
@@ -322,19 +343,48 @@ class DiagnosticSession:
                         "message": "No knowledge generation was bound to this run",
                     },
                 }
-            if not query.strip() or len(query) > 1000 or not 1 <= top_k <= 10:
+            config = self.request.retrieval_config
+            selected_k = config.top_k if config else (5 if top_k is None else top_k)
+            if top_k is not None and config and top_k != config.top_k:
+                return {
+                    "status": "refused",
+                    "items": [],
+                    "error": {"code": "frozen_retrieval_config"},
+                }
+            if not query.strip() or len(query) > 1000 or not 1 <= selected_k <= 10:
                 return {"status": "refused", "items": [], "error": {"code": "query_bounds"}}
-            import asyncio
-
             store = await asyncio.to_thread(ProjectKnowledgeStore, self.settings.local_dir)
-            result = await asyncio.to_thread(
-                store.search,
-                self.project.id,
-                self.request.knowledge_generation,
-                query,
-                mode=self.request.retrieval_mode or self.project.retrieval_mode,
-                top_k=top_k,
+            cancel_event = threading.Event()
+            search = asyncio.create_task(
+                asyncio.to_thread(
+                    store.search,
+                    self.project.id,
+                    self.request.knowledge_generation,
+                    query,
+                    mode=self.request.retrieval_mode or self.project.retrieval_mode,
+                    top_k=selected_k,
+                    retrieval_config=config,
+                    cancel_event=cancel_event,
+                )
             )
+            try:
+                result = await asyncio.shield(search)
+            except asyncio.CancelledError:
+                cancel_event.set()
+                await finish_cleanup(search)
+                raise
+            from incident_desk.knowledge.retrieval_audit import RetrievalAudit
+
+            try:
+                audit = await asyncio.to_thread(RetrievalAudit, self.settings.local_dir)
+                recorded = await asyncio.to_thread(audit.record, self.run_id, query, result)
+                if recorded.get("error_code") == "audit_storage_unavailable":
+                    result.get("retrieval", {})["audit_status"] = "unavailable"
+            except (OSError, ValueError, sqlite3.Error):
+                result.get("retrieval", {})["audit_status"] = "unavailable"
+            # Full candidate traces stay local. The LLM receives selected
+            # sources and bounded execution metadata only.
+            result.get("retrieval", {}).pop("candidates", None)
             result["items"] = await self.remember(result.get("items", []))
             return result
 
@@ -347,8 +397,6 @@ class DiagnosticSession:
             History exists only since collection began. Do not infer pre-collection
             trends or rates from fewer than two comparable samples.
             """
-            import asyncio
-
             from incident_desk.observations import ObservationStore
 
             start, end = start or self.request.start, end or self.request.end

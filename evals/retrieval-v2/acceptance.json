@@ -1,0 +1,934 @@
+{
+  "version": "retrieval-v2-original-2026-11",
+  "split": "acceptance",
+  "queries": [
+    {
+      "id": "acceptance-001",
+      "mechanism_group": "queue_visibility_lease",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "Which DELIVERY_LEASE_EXPIRED evidence supports redelivery after completion, and what must be checked before repeating the effect?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "queue_visibility_lease-s1",
+          "path": "corpus/note-013.md",
+          "quote": "Expired delivery leases are supported when processing exceeds the configured visibility interval, old unacknowledged deliveries return, and durable completion records already exist.",
+          "start_char": 95,
+          "end_char": 276,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "queue_visibility_lease-s2",
+          "path": "corpus/note-013.md",
+          "quote": "Compare completion timestamps with lease renewals and acknowledge only after durable completion; inspect the receipt before repeating an uncertain business effect.",
+          "start_char": 304,
+          "end_char": 467,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-014.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-002",
+      "mechanism_group": "queue_visibility_lease",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "A job reappears after its handler has durably completed because processing outlasts a temporary delivery hold. Which records distinguish redelivery from work that never ran?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "queue_visibility_lease-s1",
+          "path": "corpus/note-013.md",
+          "quote": "Expired delivery leases are supported when processing exceeds the configured visibility interval, old unacknowledged deliveries return, and durable completion records already exist.",
+          "start_char": 95,
+          "end_char": 276,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "queue_visibility_lease-s2",
+          "path": "corpus/note-013.md",
+          "quote": "Compare completion timestamps with lease renewals and acknowledge only after durable completion; inspect the receipt before repeating an uncertain business effect.",
+          "start_char": 304,
+          "end_char": 467,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-014.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-003",
+      "mechanism_group": "queue_visibility_lease",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "任务处理时间超过可见性期限，已有持久完成回执的消息又出现。如何核对续期与回执，避免重复业务效果？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "queue_visibility_lease-s1",
+          "path": "corpus/note-013.md",
+          "quote": "Expired delivery leases are supported when processing exceeds the configured visibility interval, old unacknowledged deliveries return, and durable completion records already exist.",
+          "start_char": 95,
+          "end_char": 276,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "queue_visibility_lease-s2",
+          "path": "corpus/note-013.md",
+          "quote": "Compare completion timestamps with lease renewals and acknowledge only after durable completion; inspect the receipt before repeating an uncertain business effect.",
+          "start_char": 304,
+          "end_char": 467,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-014.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-004",
+      "mechanism_group": "queue_visibility_lease",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "What is the exact retention and indemnity clause in our queue vendor contract?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-013.md",
+        "corpus/note-014.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "acceptance-005",
+      "mechanism_group": "transaction_lock_owner",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "What TRANSACTION_LOCK_WAIT evidence identifies a blocking owner rather than an exhausted connection pool?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "transaction_lock_owner-s1",
+          "path": "corpus/note-015.md",
+          "quote": "Lock contention is supported by waiting transactions that identify the same blocking owner, a long open transaction, and low query execution CPU outside the wait.",
+          "start_char": 94,
+          "end_char": 256,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "transaction_lock_owner-s2",
+          "path": "corpus/note-015.md",
+          "quote": "Trace the owner transaction and its lifetime before proposing a targeted intervention; distinguish lock wait from connection admission wait and retain blocked statement identities.",
+          "start_char": 284,
+          "end_char": 464,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-016.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-006",
+      "mechanism_group": "transaction_lock_owner",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "Transactions remain parked behind one old transaction although the database is not busy executing queries. Which owner and timing details should be captured?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "transaction_lock_owner-s1",
+          "path": "corpus/note-015.md",
+          "quote": "Lock contention is supported by waiting transactions that identify the same blocking owner, a long open transaction, and low query execution CPU outside the wait.",
+          "start_char": 94,
+          "end_char": 256,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "transaction_lock_owner-s2",
+          "path": "corpus/note-015.md",
+          "quote": "Trace the owner transaction and its lifetime before proposing a targeted intervention; distinguish lock wait from connection admission wait and retain blocked statement identities.",
+          "start_char": 284,
+          "end_char": 464,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-016.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-007",
+      "mechanism_group": "transaction_lock_owner",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "数据库执行CPU不高，但多个事务等待同一个长期未结束的事务。应该采集哪些阻塞持有者和等待时间证据？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "transaction_lock_owner-s1",
+          "path": "corpus/note-015.md",
+          "quote": "Lock contention is supported by waiting transactions that identify the same blocking owner, a long open transaction, and low query execution CPU outside the wait.",
+          "start_char": 94,
+          "end_char": 256,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "transaction_lock_owner-s2",
+          "path": "corpus/note-015.md",
+          "quote": "Trace the owner transaction and its lifetime before proposing a targeted intervention; distinguish lock wait from connection admission wait and retain blocked statement identities.",
+          "start_char": 284,
+          "end_char": 464,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-016.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-008",
+      "mechanism_group": "transaction_lock_owner",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "Which production employee is authorized to terminate the identified database transaction?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-015.md",
+        "corpus/note-016.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "acceptance-009",
+      "mechanism_group": "cache_namespace_rollout",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "For CACHE_SCHEMA_EPOCH, which evidence distinguishes incompatible cached values from an ordinary cold cache?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "cache_namespace_rollout-s1",
+          "path": "corpus/note-017.md",
+          "quote": "A cache rollout mismatch is supported when one application epoch reads entries written under another schema namespace, misses are low, and decoding failures track mixed versions.",
+          "start_char": 91,
+          "end_char": 269,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "cache_namespace_rollout-s2",
+          "path": "corpus/note-017.md",
+          "quote": "Compare reader and writer namespace epochs and inspect a redacted entry shape before any scoped invalidation; a cache hit is not proof that the value matches the reader schema.",
+          "start_char": 297,
+          "end_char": 473,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-018.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-010",
+      "mechanism_group": "cache_namespace_rollout",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "Most reads hit cache, yet mixed application versions cannot decode the returned values after a rollout. What versions and entry structure should be compared?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "cache_namespace_rollout-s1",
+          "path": "corpus/note-017.md",
+          "quote": "A cache rollout mismatch is supported when one application epoch reads entries written under another schema namespace, misses are low, and decoding failures track mixed versions.",
+          "start_char": 91,
+          "end_char": 269,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "cache_namespace_rollout-s2",
+          "path": "corpus/note-017.md",
+          "quote": "Compare reader and writer namespace epochs and inspect a redacted entry shape before any scoped invalidation; a cache hit is not proof that the value matches the reader schema.",
+          "start_char": 297,
+          "end_char": 473,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-018.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-011",
+      "mechanism_group": "cache_namespace_rollout",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "发布后缓存命中率仍高，但混合版本实例解码缓存值失败。怎样区分缓存命名空间不兼容和普通冷缓存？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "cache_namespace_rollout-s1",
+          "path": "corpus/note-017.md",
+          "quote": "A cache rollout mismatch is supported when one application epoch reads entries written under another schema namespace, misses are low, and decoding failures track mixed versions.",
+          "start_char": 91,
+          "end_char": 269,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "cache_namespace_rollout-s2",
+          "path": "corpus/note-017.md",
+          "quote": "Compare reader and writer namespace epochs and inspect a redacted entry shape before any scoped invalidation; a cache hit is not proof that the value matches the reader schema.",
+          "start_char": 297,
+          "end_char": 473,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-018.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-012",
+      "mechanism_group": "cache_namespace_rollout",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "Which private customer cache keys may be shared in a public issue?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-017.md",
+        "corpus/note-018.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "acceptance-013",
+      "mechanism_group": "asynchronous_replica_visibility",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "How does REPLICA_APPLY_POSITION separate asynchronous visibility lag from a stale client cache?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "asynchronous_replica_visibility-s1",
+          "path": "corpus/note-019.md",
+          "quote": "Replica visibility lag is supported when a primary commit is durable, the selected read replica has not reached its apply position, and direct primary reads already see the write.",
+          "start_char": 95,
+          "end_char": 274,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "asynchronous_replica_visibility-s2",
+          "path": "corpus/note-019.md",
+          "quote": "Record the commit and apply positions and the actual read route before changing consistency settings; successful transport does not prove that a replica has applied a transaction.",
+          "start_char": 302,
+          "end_char": 481,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-020.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-014",
+      "mechanism_group": "asynchronous_replica_visibility",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "A write is committed and visible on the writer, but the reader node has not reached that position. Which route and progress markers establish the bounded explanation?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "asynchronous_replica_visibility-s1",
+          "path": "corpus/note-019.md",
+          "quote": "Replica visibility lag is supported when a primary commit is durable, the selected read replica has not reached its apply position, and direct primary reads already see the write.",
+          "start_char": 95,
+          "end_char": 274,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "asynchronous_replica_visibility-s2",
+          "path": "corpus/note-019.md",
+          "quote": "Record the commit and apply positions and the actual read route before changing consistency settings; successful transport does not prove that a replica has applied a transaction.",
+          "start_char": 302,
+          "end_char": 481,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-020.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-015",
+      "mechanism_group": "asynchronous_replica_visibility",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "主库写入已持久且能读到，读副本尚未追上对应应用位置。应怎样核对提交位置、回放位置与实际读路由？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "asynchronous_replica_visibility-s1",
+          "path": "corpus/note-019.md",
+          "quote": "Replica visibility lag is supported when a primary commit is durable, the selected read replica has not reached its apply position, and direct primary reads already see the write.",
+          "start_char": 95,
+          "end_char": 274,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "asynchronous_replica_visibility-s2",
+          "path": "corpus/note-019.md",
+          "quote": "Record the commit and apply positions and the actual read route before changing consistency settings; successful transport does not prove that a replica has applied a transaction.",
+          "start_char": 302,
+          "end_char": 481,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-020.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-016",
+      "mechanism_group": "asynchronous_replica_visibility",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "What recovery-point objective has the business formally promised for every dataset?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-019.md",
+        "corpus/note-020.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "acceptance-017",
+      "mechanism_group": "resolver_stale_endpoint",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "Which RESOLVER_CACHE_AGE evidence distinguishes stale name resolution from an old keep-alive connection?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "resolver_stale_endpoint-s1",
+          "path": "corpus/note-021.md",
+          "quote": "A stale resolver cache is supported when the application resolves a retired endpoint, the authoritative answer has changed, and connection attempts follow the cached address until expiry.",
+          "start_char": 91,
+          "end_char": 278,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "resolver_stale_endpoint-s2",
+          "path": "corpus/note-021.md",
+          "quote": "Compare application resolver answers, their ages and the authoritative address; separate resolver caching from an already-open connection that merely keeps an older peer.",
+          "start_char": 306,
+          "end_char": 476,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-022.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-018",
+      "mechanism_group": "resolver_stale_endpoint",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "Fresh requests still target a retired address although the authoritative name now points elsewhere. Which cached answer and connection details identify where staleness lives?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "resolver_stale_endpoint-s1",
+          "path": "corpus/note-021.md",
+          "quote": "A stale resolver cache is supported when the application resolves a retired endpoint, the authoritative answer has changed, and connection attempts follow the cached address until expiry.",
+          "start_char": 91,
+          "end_char": 278,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "resolver_stale_endpoint-s2",
+          "path": "corpus/note-021.md",
+          "quote": "Compare application resolver answers, their ages and the authoritative address; separate resolver caching from an already-open connection that merely keeps an older peer.",
+          "start_char": 306,
+          "end_char": 476,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-022.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-019",
+      "mechanism_group": "resolver_stale_endpoint",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "权威地址已经更新，新请求仍连接退役地址。怎样对比应用解析缓存年龄和长连接对端，确定陈旧状态在哪一层？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "resolver_stale_endpoint-s1",
+          "path": "corpus/note-021.md",
+          "quote": "A stale resolver cache is supported when the application resolves a retired endpoint, the authoritative answer has changed, and connection attempts follow the cached address until expiry.",
+          "start_char": 91,
+          "end_char": 278,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "resolver_stale_endpoint-s2",
+          "path": "corpus/note-021.md",
+          "quote": "Compare application resolver answers, their ages and the authoritative address; separate resolver caching from an already-open connection that merely keeps an older peer.",
+          "start_char": 306,
+          "end_char": 476,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-022.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-020",
+      "mechanism_group": "resolver_stale_endpoint",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "Which private corporate DNS credentials permit changing the authoritative record?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-021.md",
+        "corpus/note-022.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "acceptance-021",
+      "mechanism_group": "loopback_proxy_routing",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "What LOOPBACK_PROXY_BYPASS evidence separates proxy routing from an unavailable local listener?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "loopback_proxy_routing-s1",
+          "path": "corpus/note-023.md",
+          "quote": "Proxy misrouting is supported when a loopback request appears in the configured proxy trace, a direct request succeeds, and the bypass rule omits the exact local host or address.",
+          "start_char": 94,
+          "end_char": 272,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "loopback_proxy_routing-s2",
+          "path": "corpus/note-023.md",
+          "quote": "Compare the application environment and bypass matching for the registered origin; do not expand a read-only diagnostic into arbitrary external proxy requests.",
+          "start_char": 300,
+          "end_char": 459,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-024.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-022",
+      "mechanism_group": "loopback_proxy_routing",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "A local service answers directly, but the application sends that same destination through an intermediary and gets a gateway error. What configuration comparison is useful?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "loopback_proxy_routing-s1",
+          "path": "corpus/note-023.md",
+          "quote": "Proxy misrouting is supported when a loopback request appears in the configured proxy trace, a direct request succeeds, and the bypass rule omits the exact local host or address.",
+          "start_char": 94,
+          "end_char": 272,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "loopback_proxy_routing-s2",
+          "path": "corpus/note-023.md",
+          "quote": "Compare the application environment and bypass matching for the registered origin; do not expand a read-only diagnostic into arbitrary external proxy requests.",
+          "start_char": 300,
+          "end_char": 459,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-024.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-023",
+      "mechanism_group": "loopback_proxy_routing",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "本机服务直连正常，应用却经代理访问同一地址并收到网关错误。应该怎样核对环境代理与绕过规则的精确匹配？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "loopback_proxy_routing-s1",
+          "path": "corpus/note-023.md",
+          "quote": "Proxy misrouting is supported when a loopback request appears in the configured proxy trace, a direct request succeeds, and the bypass rule omits the exact local host or address.",
+          "start_char": 94,
+          "end_char": 272,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "loopback_proxy_routing-s2",
+          "path": "corpus/note-023.md",
+          "quote": "Compare the application environment and bypass matching for the registered origin; do not expand a read-only diagnostic into arbitrary external proxy requests.",
+          "start_char": 300,
+          "end_char": 459,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-024.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-024",
+      "mechanism_group": "loopback_proxy_routing",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "What is the username and password of the organization outbound proxy?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-023.md",
+        "corpus/note-024.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "acceptance-025",
+      "mechanism_group": "slow_consumer_backpressure",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "Which STREAM_PENDING_BYTES combination supports a slow subscriber rather than expensive producer computation?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "slow_consumer_backpressure-s1",
+          "path": "corpus/note-025.md",
+          "quote": "Slow-consumer backpressure is supported when per-client pending bytes grow, consumer acknowledgements stall, and producer work stays stable while memory follows buffered output.",
+          "start_char": 93,
+          "end_char": 270,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "slow_consumer_backpressure-s2",
+          "path": "corpus/note-025.md",
+          "quote": "Compare queue limits and acknowledgement progress for the affected stream before dropping data or restarting producers; global throughput alone hides a single slow subscriber.",
+          "start_char": 298,
+          "end_char": 473,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-026.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-026",
+      "mechanism_group": "slow_consumer_backpressure",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "One subscriber stops acknowledging while its buffered output expands and producer execution stays unchanged. Which per-stream boundaries should be inspected?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "slow_consumer_backpressure-s1",
+          "path": "corpus/note-025.md",
+          "quote": "Slow-consumer backpressure is supported when per-client pending bytes grow, consumer acknowledgements stall, and producer work stays stable while memory follows buffered output.",
+          "start_char": 93,
+          "end_char": 270,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "slow_consumer_backpressure-s2",
+          "path": "corpus/note-025.md",
+          "quote": "Compare queue limits and acknowledgement progress for the affected stream before dropping data or restarting producers; global throughput alone hides a single slow subscriber.",
+          "start_char": 298,
+          "end_char": 473,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-026.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-027",
+      "mechanism_group": "slow_consumer_backpressure",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "某个订阅者确认停止，待发送字节持续增长，但生产者处理耗时稳定。怎样识别慢消费者背压并核对队列边界？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "slow_consumer_backpressure-s1",
+          "path": "corpus/note-025.md",
+          "quote": "Slow-consumer backpressure is supported when per-client pending bytes grow, consumer acknowledgements stall, and producer work stays stable while memory follows buffered output.",
+          "start_char": 93,
+          "end_char": 270,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "slow_consumer_backpressure-s2",
+          "path": "corpus/note-025.md",
+          "quote": "Compare queue limits and acknowledgement progress for the affected stream before dropping data or restarting producers; global throughput alone hides a single slow subscriber.",
+          "start_char": 298,
+          "end_char": 473,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-026.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-028",
+      "mechanism_group": "slow_consumer_backpressure",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "What data-loss exception did each customer sign for dropping their stream messages?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-025.md",
+        "corpus/note-026.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    },
+    {
+      "id": "acceptance-029",
+      "mechanism_group": "cpu_budget_throttling",
+      "kind": "exact_identifier",
+      "language": "en",
+      "query": "For SCHEDULER_THROTTLED_TIME, why can a quiet host coexist with process-level CPU starvation?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "cpu_budget_throttling-s1",
+          "path": "corpus/note-027.md",
+          "quote": "CPU-budget throttling is supported when the process exhausts its configured execution quota and throttled time rises despite modest machine-wide CPU utilization.",
+          "start_char": 97,
+          "end_char": 258,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "cpu_budget_throttling-s2",
+          "path": "corpus/note-027.md",
+          "quote": "Compare the process quota, runnable delay and throttling counter deltas over the same interval; a quiet host does not prove that this process has spare execution budget.",
+          "start_char": 286,
+          "end_char": 455,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-028.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-030",
+      "mechanism_group": "cpu_budget_throttling",
+      "kind": "paraphrase",
+      "language": "en",
+      "query": "The machine looks mostly idle, but one process repeatedly spends its allowed CPU slice and then waits to run. Which per-process limits and deltas should be compared?",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "cpu_budget_throttling-s1",
+          "path": "corpus/note-027.md",
+          "quote": "CPU-budget throttling is supported when the process exhausts its configured execution quota and throttled time rises despite modest machine-wide CPU utilization.",
+          "start_char": 97,
+          "end_char": 258,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "cpu_budget_throttling-s2",
+          "path": "corpus/note-027.md",
+          "quote": "Compare the process quota, runnable delay and throttling counter deltas over the same interval; a quiet host does not prove that this process has spare execution budget.",
+          "start_char": 286,
+          "end_char": 455,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-028.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-031",
+      "mechanism_group": "cpu_budget_throttling",
+      "kind": "paraphrase",
+      "language": "zh",
+      "query": "整机CPU看似空闲，某进程却不断耗尽执行配额并等待调度。应如何对比配额、可运行等待与限流计数增量？",
+      "answerable": true,
+      "relevant_spans": [
+        {
+          "unit_id": "cpu_budget_throttling-s1",
+          "path": "corpus/note-027.md",
+          "quote": "CPU-budget throttling is supported when the process exhausts its configured execution quota and throttled time rises despite modest machine-wide CPU utilization.",
+          "start_char": 97,
+          "end_char": 258,
+          "line_start": 5,
+          "line_end": 5,
+          "grade": 3
+        },
+        {
+          "unit_id": "cpu_budget_throttling-s2",
+          "path": "corpus/note-027.md",
+          "quote": "Compare the process quota, runnable delay and throttling counter deltas over the same interval; a quiet host does not prove that this process has spare execution budget.",
+          "start_char": 286,
+          "end_char": 455,
+          "line_start": 9,
+          "line_end": 9,
+          "grade": 2
+        }
+      ],
+      "hard_negative_paths": [
+        "corpus/note-028.md"
+      ],
+      "no_answer_rationale": null
+    },
+    {
+      "id": "acceptance-032",
+      "mechanism_group": "cpu_budget_throttling",
+      "kind": "no_answer",
+      "language": "en",
+      "query": "What additional monthly cloud spending limit has the finance team approved for CPU expansion?",
+      "answerable": false,
+      "relevant_spans": [],
+      "hard_negative_paths": [
+        "corpus/note-027.md",
+        "corpus/note-028.md"
+      ],
+      "no_answer_rationale": "The frozen corpus has no organization-specific authority, secret, contract, finance or customer consent records; related technical terms cannot answer this question."
+    }
+  ]
+}

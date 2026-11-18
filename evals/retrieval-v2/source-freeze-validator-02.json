@@ -1,0 +1,26 @@
+{
+  "version": "retrieval-v2-code-freeze-v1",
+  "created_at": "2026-11-18T06:33:47.568942+00:00",
+  "git_base": "1a29ea416811525565e36ffaea1d0f6a75b89fff",
+  "source_files": {
+    "scripts/evaluate_reranking.py": "088090812e2a27890873d67209b95c618ed3221de425b57166c8ae386db64095",
+    "src/incident_desk/knowledge/project_store.py": "244b22c3788a770ae2ecfd24079c6c2d8497fc40daf08d5e7250b68266b12d2f",
+    "src/incident_desk/knowledge/embeddings.py": "237782191b7e0f8ad3f869faf163e9b54d41df1dd7898caa41d36c1f213f1873",
+    "src/incident_desk/knowledge/reranker.py": "40da0272b2667aafc62813311a09179f84517cf3fd0e70f7c089734f0b5d2024",
+    "src/incident_desk/knowledge/retrieval_config.py": "62c2aee186c1b6adf2e85ad7572bf9b380ab9e826900b5a9a287c124282ae7da",
+    "src/incident_desk/knowledge/store.py": "f0601b0aaad036055a74166985c1e2a8438a9377934d9cd1faa6fcb706f25ecc",
+    "src/incident_desk/projects.py": "a132123143725d0084b5a348af517ffb35054d4ee1b8998c286927da8b78cc53",
+    "src/incident_desk/cloud_policy.py": "889256cbc8c44b476eaabad5cd32e1fd966272b4c20db39fde59012bc7b615bd"
+  },
+  "source_sha256": "9d1a1e07cd1aac9400b5a0ca39a43fee015289674055ba0aead1ac3ac05ebd90",
+  "dataset_sha256": "dfad3c81b61cfd6e4abd799bd57dd42b5c49f43377daa33a11d6e1823bdfd832",
+  "run_plan_sha256": "d3af5db493879d34e2f7dda1baafa2a5e310dac51946652891b5dd12e9b7205a",
+  "config": {
+    "candidate_n": 50,
+    "rerank_top_n": 20,
+    "top_k": 5,
+    "reranker": "off",
+    "policy_version": "retrieval-v2",
+    "reranker_fingerprint": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1@1427fd652930e4ba29e8149678df786c240d8825:cpu-fp32:pair512:query-head128:passage-head:batch2:raw-logit:v1"
+  }
+}

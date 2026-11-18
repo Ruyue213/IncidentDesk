@@ -19,6 +19,14 @@ function ProjectEditor({ project, onSaved }: { project: ProjectProfile | null; o
   const [configs, setConfigs] = useState(project?.config_files.join('\n') || '');
   const [knowledgePaths, setKnowledgePaths] = useState(project?.knowledge_paths?.join('\n') || '');
   const [retrievalMode, setRetrievalMode] = useState(project?.retrieval_mode || 'hybrid');
+  const [candidateN, setCandidateN] = useState(project?.retrieval_config?.candidate_n ?? 50);
+  const [rerankN, setRerankN] = useState(project?.retrieval_config?.rerank_top_n ?? 20);
+  const [topK, setTopK] = useState(project?.retrieval_config?.top_k ?? 5);
+  const [reranker, setReranker] = useState(project?.retrieval_config?.reranker ?? 'off');
+  const [cloudMode, setCloudMode] = useState(project?.cloud_policy?.mode ?? 'redacted');
+  const [cloudOrigins, setCloudOrigins] = useState(project?.cloud_policy?.allowed_origins.join('\n') || 'https://api.deepseek.com');
+  const [allowSource, setAllowSource] = useState(project?.cloud_policy?.allow_source_code !== false);
+  const [redactLiterals, setRedactLiterals] = useState(project?.cloud_policy?.redact_literals.join('\n') || '');
   const [historyEnabled, setHistoryEnabled] = useState(project?.history_enabled !== false);
   const [businessProbe, setBusinessProbe] = useState(project?.business_probe ? JSON.stringify(project.business_probe, null, 2) : '');
   const [argv, setArgv] = useState(JSON.stringify(project?.start_argv || [], null, 2));
@@ -36,9 +44,12 @@ function ProjectEditor({ project, onSaved }: { project: ProjectProfile | null; o
     action.current = true; setBusy('save'); setError(''); setNotice('');
     try {
       const startArgv: unknown = JSON.parse(argv);
+      if (topK > rerankN || rerankN > 2 * candidateN) throw new Error('最终片段数须不大于重排候选数；重排候选数须不大于每路候选数的两倍。');
       if (!Array.isArray(startArgv) || !startArgv.every((part) => typeof part === 'string')) throw new Error('启动参数必须为 JSON 字符串数组，例如 ["python", "app.py"]。');
       const body: ProjectInput = { id: id.trim(), name: name.trim(), root: root.trim(), log_files: lines(logs), config_files: lines(configs), start_argv: startArgv,
         knowledge_paths: lines(knowledgePaths), retrieval_mode: retrievalMode, history_enabled: historyEnabled,
+        retrieval_config: { ...project?.retrieval_config, candidate_n: candidateN, rerank_top_n: rerankN, top_k: topK, reranker },
+        cloud_policy: { mode: cloudMode, allowed_origins: lines(cloudOrigins), allow_source_code: allowSource, redact_literals: lines(redactLiterals) },
         business_probe: businessProbe.trim() ? JSON.parse(businessProbe) : null,
         health_url: health.trim() || null, metrics_url: metrics.trim() || null, stats_url: stats.trim() || null,
         timezone: project?.timezone || 'Asia/Shanghai', ...(project ? { expected_version: project.version } : {}) };
@@ -64,6 +75,15 @@ function ProjectEditor({ project, onSaved }: { project: ProjectProfile | null; o
     <div className={s.timeFields}><label>指标地址（可选）<input aria-label="指标地址" value={metrics} onChange={(event) => setMetrics(event.target.value)} /></label><label>业务统计地址（可选）<input aria-label="业务统计地址" value={stats} onChange={(event) => setStats(event.target.value)} /></label></div>
     <label>知识文档（每行一个相对路径，可选）<textarea aria-label="知识文档" value={knowledgePaths} onChange={(event) => setKnowledgePaths(event.target.value)} rows={3} placeholder="docs/runbooks\ndocs/architecture.md" /><small>只登记已审核的 Markdown / 文本。保存后手动建立索引；不要登记凭证或未脱敏的业务材料。</small></label>
     <label>知识检索方式<select aria-label="知识检索方式" value={retrievalMode} onChange={(event) => setRetrievalMode(event.target.value as typeof retrievalMode)}><option value="hybrid">混合 · BM25 + 向量 + RRF</option><option value="lexical">词法 · BM25</option><option value="dense">向量 · 语义检索</option></select></label>
+    <div className={s.timeFields}><label>每路召回候选数<input aria-label="每路召回候选数" type="number" min={5} max={100} required value={candidateN} onChange={(event) => setCandidateN(Number(event.target.value))} /></label><label>送入重排的 Top N<input aria-label="重排候选数" type="number" min={1} max={100} required value={rerankN} onChange={(event) => setRerankN(Number(event.target.value))} /></label></div>
+    <div className={s.timeFields}><label>最终返回的 Top K<input aria-label="最终片段数" type="number" min={1} max={10} required value={topK} onChange={(event) => setTopK(Number(event.target.value))} /></label><label>候选重排<select aria-label="候选重排" value={reranker} onChange={(event) => setReranker(event.target.value as typeof reranker)}><option value="off">关闭 · 使用召回融合排名</option><option value="cross_encoder">本机 Cross-Encoder · 逐对语义打分</option></select></label></div>
+    <p className={s.muted}>新任务冻结这些数量与模型版本。重排只处理已召回片段；未安装模型、忙碌或超时会明确回退到原排名。可在下方试检索中核对实际执行方式。</p>
+    <details className={s.advancedSettings}><summary>云端数据发送规则</summary>
+      <label>该项目的云端诊断<select aria-label="云端诊断策略" value={cloudMode} onChange={(event) => setCloudMode(event.target.value as typeof cloudMode)}><option value="redacted">允许规则脱敏后发送</option><option value="deny">禁止发送 · 仅使用本机采集与知识检查</option></select></label>
+      <label>允许的模型来源（每行一个 HTTPS 来源）<textarea aria-label="允许的模型来源" value={cloudOrigins} onChange={(event) => setCloudOrigins(event.target.value)} rows={2} placeholder="https://api.deepseek.com" /></label>
+      <label className={s.checkboxCard}><input type="checkbox" aria-label="允许源码内容发送" checked={allowSource} onChange={(event) => setAllowSource(event.target.checked)} /><span>允许 Agent 读取并发送源码片段<small>关闭后，文件读取和项目全文搜索工具会拒绝读取；单独登记的知识文档、日志和运行证据仍按项目权限使用。</small></span></label>
+      <label>额外替换的敏感字词（每行一个）<textarea aria-label="额外脱敏字词" value={redactLiterals} onChange={(event) => setRedactLiterals(event.target.value)} rows={3} /><small>可登记客户名、内部标识等，返回给模型和保存为引用的片段会使用替换后的文本。规则不能保证识别全部业务隐私。</small></label>
+    </details>
     <label className={s.checkboxCard}><input type="checkbox" checked={historyEnabled} onChange={(event) => setHistoryEnabled(event.target.checked)} /><span>保留本机运行观测历史<small>后台每 10 秒采集已登记健康、指标与统计入口，最多保留 7 天；未开始采集的时间段没有历史数据。</small></span></label>
     <label>固定只读业务探针（JSON，可选）<textarea aria-label="业务探针配置" className={s.codeInput} value={businessProbe} onChange={(event) => setBusinessProbe(event.target.value)} rows={5} spellCheck={false} placeholder={'{"method":"POST","path":"/query","body":{"type":"dist","a":1,"b":1},"expected_status":200,"expected_json":{"distance":0}}'} /><small>请求只发送到健康检查地址的同一来源。当前支持登记的只读查询及 JSON 断言；Agent 不能自造 URL 或请求体。</small></label>
     {error && <div className={s.inlineError} role="alert">{error}</div>}{notice && <div className={s.inlineInfo} role="status">{notice}</div>}

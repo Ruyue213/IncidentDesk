@@ -17,7 +17,7 @@ IncidentDesk 连接你授权的本机服务，采集有边界的日志、健康�
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-python -m pip install --constraint ./incidentdesk-constraints.txt ./incident_desk-0.3.0b1-py3-none-any.whl
+python -m pip install --constraint ./incidentdesk-constraints.txt ./incident_desk-0.4.0b1-py3-none-any.whl
 incidentdesk doctor
 incidentdesk serve
 ```
@@ -45,7 +45,7 @@ incidentdesk serve
 支持词法 BM25、本地向量余弦检索与 RRF 融合。可选 embedding 为 `intfloat/multilingual-e5-small`，固定 revision `fd1525a9fd15316a2d503bf26ab031a61d056e98`，使用 384 维归一化向量和 E5 query／passage 前缀。推理不会临时联网下载模型，需要明确安装：
 
 ```sh
-python -m pip install --constraint ./incidentdesk-constraints.txt './incident_desk-0.3.0b1-py3-none-any.whl[rag]'
+python -m pip install --constraint ./incidentdesk-constraints.txt './incident_desk-0.4.0b1-py3-none-any.whl[rag]'
 incidentdesk embeddings status
 incidentdesk embeddings download
 ```
@@ -53,6 +53,19 @@ incidentdesk embeddings download
 可选依赖会安装 PyTorch 与 sentence-transformers；下载命令获取约 470 MB 的公开模型文件，模型遵循其上游许可证。本地 embedding 不代表诊断完全离线：检索到并选入上下文的片段仍可能发送给云端 LLM。
 
 在项目设置中登记 `knowledge_paths` 与 `retrieval_mode`，保存后通过知识面板明确建立索引、试检索；也可以调用 `POST /api/projects/{id}/knowledge/index` 和 `/knowledge/search`。面板还提供历史采样与固定业务探针检查。这些操作不消耗 LLM 调用。缺少本地模型时会明确报告降级，不能将词法结果标称为已启用混合检索。这是面向项目文档的有界索引，并非企业级海量文档搜索平台。
+
+默认每路保留 50 个候选，融合后取 20 个，多样性筛选后返回最多 5 个片段。可在项目设置中分别修改。新任务会冻结配置、模型版本与索引版本。保存项目的新版本后，用知识面板更新索引。安装 `rag` 依赖后，可明确下载本地多语言 Cross-Encoder：
+
+```sh
+incidentdesk reranker status
+incidentdesk reranker download
+```
+
+在项目设置启用重排后，模型对问题和每个候选片段联合打分。缺模型、资源繁忙或超时会回退到原排名。任务内可查看排序、分数、耗时和降级原因。评测使用[冻结的新语料与验收协议](evals/retrieval-v2/README.md)。
+
+本机 worker 默认可同时处理两个任务，启动前可通过 `INCIDENT_DESK_WORKER_CONCURRENCY` 设置为 1–8。工作台显示执行、排队和待审批数量。同一项目的已批准修改仍串行执行。
+
+真实项目任务结束后，可在“人工核对与业务结果”中执行固定只读检查。结果会保存为当前任务的引用证据，可据此分别记录诊断结论与业务恢复。页面可下载包含标注覆盖率和恢复尝试分母的本机统计。项目设置还可限制云端来源、禁止云诊断、关闭源码读取或补充脱敏字词。
 
 ## 工程闭环及边界
 
@@ -102,7 +115,7 @@ uv run --frozen --extra rag pytest -q
 npm test --prefix frontend
 uv build --out-dir dist
 uv export --frozen --all-extras --no-dev --no-emit-project --no-hashes --output-file dist/incidentdesk-constraints.txt
-uv run --frozen --extra rag python scripts/check_release.py --wheel dist/incident_desk-0.3.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
+uv run --frozen --extra rag python scripts/check_release.py --wheel dist/incident_desk-0.4.0b1-py3-none-any.whl --constraints dist/incidentdesk-constraints.txt
 ```
 
 发布检查在全新虚拟环境与无关工作目录安装 wheel，验证包内网页和静态资源、登记合成项目、完成脚本模型任务，再验证停止与备份／恢复；不调用供应商，不操作已有真实服务。CI 在 Linux 与 macOS 执行无需真实模型的检查。真实付费模型与具体目标服务集成需要另行显式验证；仅编写了 CI 文件不能视为对应平台已经验收。

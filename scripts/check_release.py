@@ -107,6 +107,9 @@ def check(wheel: Path, constraints: Path | None = None, offline: bool = False) -
             assert json.loads(request("/api/projects"))["items"] == []
             readiness = json.loads(request("/api/readiness"))
             assert readiness["model"]["status"] == "unconfigured", readiness
+            assert readiness["worker"]["capacity"] == 2
+            reranker = json.loads(run([cli, "reranker", "status"]))
+            assert reranker["download_required"] and reranker["local_only"]
             project = root / "example-project"
             project.mkdir()
             (project / "RUNBOOK.md").write_text(
@@ -145,6 +148,19 @@ def check(wheel: Path, constraints: Path | None = None, offline: bool = False) -
                 )
             )
             assert found["items"], found
+            degraded = json.loads(
+                request(
+                    "/api/projects/release-check/knowledge/search",
+                    {
+                        "query": "connection pool timeout",
+                        "mode": "lexical",
+                        "retrieval_config": {"reranker": "cross_encoder", "top_k": 1},
+                    },
+                )
+            )
+            assert degraded["status"] == "degraded" and len(degraded["items"]) == 1
+            assert degraded["retrieval"]["reranker"]["effective"] == "off"
+            assert json.loads(request("/api/outcomes/aggregate"))["annotated_runs"] == 0
             json.loads(request("/api/projects/release-check/sample", {}))
             now = datetime.now(UTC)
             bounds = urllib.parse.urlencode(
@@ -188,6 +204,8 @@ def check(wheel: Path, constraints: Path | None = None, offline: bool = False) -
             "bundled_ui_and_assets": True,
             "new_project_registration": True,
             "knowledge_index_and_search": True,
+            "reranker_missing_model_falls_back": True,
+            "worker_capacity_and_empty_outcome_aggregate": True,
             "historical_observations": True,
             "fixed_readonly_business_probe": True,
             "offline_fixture_run": "SUCCEEDED",

@@ -10,6 +10,7 @@ import pytest
 
 from incident_desk.agent.budget import CallLedger
 from incident_desk.agent.models import MeteredDeepSeek, make_model
+from incident_desk.cloud_policy import CloudPolicy
 from incident_desk.projects import ProjectProfile, ProjectStore
 from incident_desk.schemas import RunInput
 from incident_desk.settings import Settings
@@ -47,6 +48,7 @@ async def test_worker_report_repair_uses_three_metered_requests_with_explicit_fe
             id="metered-repair",
             name="Synthetic metered repair",
             root=project,
+            cloud_policy=CloudPolicy(allowed_origins=[settings.base_url]),
         )
     )
     end = datetime.now(UTC)

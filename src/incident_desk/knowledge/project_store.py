@@ -14,6 +14,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from incident_desk.knowledge.embeddings import EmbeddingUnavailable, LocalEmbeddings
+from incident_desk.knowledge.reranker import LocalCrossEncoder, RerankerUnavailable
+from incident_desk.knowledge.retrieval_config import POLICY_VERSION, RetrievalConfig
 from incident_desk.knowledge.store import tokenize
 from incident_desk.projects import (
     PROJECT_ID,
@@ -218,13 +220,14 @@ def _lexical(chunks: list[dict], query: str) -> list[tuple[str, float]]:
 
 
 class ProjectKnowledgeStore:
-    def __init__(self, local_dir: str | Path, *, embeddings=None):
+    def __init__(self, local_dir: str | Path, *, embeddings=None, reranker=None):
         self.local_dir = Path(local_dir)
         self.path = self.local_dir / "project-knowledge.db"
         self.local_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         if self.path.is_symlink():
             raise ValueError("Knowledge database cannot be a symlink")
         self.embeddings = embeddings or LocalEmbeddings(local_dir)
+        self.reranker = reranker or LocalCrossEncoder(local_dir)
         with self._connect() as connection:
             connection.executescript("""
                 CREATE TABLE IF NOT EXISTS generations (
@@ -426,12 +429,24 @@ class ProjectKnowledgeStore:
         generation: str | None,
         query: str,
         mode: str = "hybrid",
-        top_k: int = 5,
+        top_k: int | None = None,
+        *,
+        retrieval_config: RetrievalConfig | dict | None = None,
+        cancel_event=None,
     ) -> dict:
         _identity(project_id)
         if not isinstance(query, str) or not 1 <= len(query.strip()) <= 1000:
             raise ValueError("Knowledge query must contain 1–1000 characters")
-        if mode not in {"lexical", "dense", "hybrid"} or not 1 <= top_k <= 10:
+        legacy = retrieval_config is None
+        config = (
+            RetrievalConfig.model_validate(retrieval_config)
+            if not legacy
+            else RetrievalConfig(top_k=5 if top_k is None else top_k)
+        )
+        if not legacy and top_k is not None and top_k != config.top_k:
+            raise ValueError("top_k conflicts with the frozen retrieval configuration")
+        top_k = config.top_k
+        if mode not in {"lexical", "dense", "hybrid"}:
             raise ValueError("Invalid retrieval mode or top_k")
         started = time.perf_counter()
         batch = {
@@ -444,7 +459,13 @@ class ProjectKnowledgeStore:
                 "historical": False,
                 "kind": "versioned_project_knowledge",
             },
-            "retrieval": {"requested_mode": mode, "effective_mode": mode, "hits": []},
+            "retrieval": {
+                "requested_mode": mode,
+                "effective_mode": mode,
+                "hits": [],
+                "config": config.model_dump(),
+                "legacy": legacy,
+            },
         }
         with self._connect() as connection:
             row = connection.execute(
@@ -470,7 +491,10 @@ class ProjectKnowledgeStore:
                     (project_id, generation),
                 )
             ]
+            phase_started = time.perf_counter()
             lexical = _lexical(chunks, query)
+            lexical_ms = (time.perf_counter() - phase_started) * 1000
+            phase_started = time.perf_counter()
             dense = []
             if mode != "lexical" and chunks:
                 try:
@@ -507,24 +531,115 @@ class ProjectKnowledgeStore:
                     )
                     batch["retrieval"]["effective_mode"] = "lexical"
                     dense = []
+        dense_ms = (time.perf_counter() - phase_started) * 1000
+        fusion_started = time.perf_counter()
         effective = batch["retrieval"]["effective_mode"]
         scores = {}
         for label, ranking in (("lexical", lexical), ("dense", dense)):
             for rank, (identity, score) in enumerate(ranking, 1):
                 entry = scores.setdefault(identity, {"rrf": 0.0})
                 entry[label] = score
-                if effective == "hybrid" and rank <= 50:
+                if effective == "hybrid" and rank <= config.candidate_n:
                     entry["rrf"] += 1 / (RRF_K + rank)
         if effective == "lexical":
-            ranked = lexical
+            ranked = lexical if legacy else lexical[: config.candidate_n]
         elif effective == "dense":
-            ranked = dense
+            ranked = dense if legacy else dense[: config.candidate_n]
         else:
             ranked = sorted(
                 ((identity, row["rrf"]) for identity, row in scores.items() if row["rrf"] > 0),
                 key=lambda pair: (-pair[1], pair[0]),
             )
         lookup = {chunk["id"]: chunk for chunk in chunks}
+        fused = list(ranked)
+        ranked = ranked if legacy else ranked[: config.rerank_top_n]
+
+        def rows(ranking):
+            # Explicit policies never exceed 200 candidates. Legacy single-channel
+            # retrieval can have more; bounded traces report that truncation honestly.
+            return [
+                {
+                    "id": identity,
+                    "rank": rank,
+                    "scores": dict(scores[identity]),
+                    "doc_id": lookup[identity]["doc_id"],
+                    "path": lookup[identity]["path"],
+                    "line_start": lookup[identity]["line_start"],
+                    "line_end": lookup[identity]["line_end"],
+                    "content": lookup[identity]["content"],
+                }
+                for rank, (identity, _score) in enumerate(ranking[:200], 1)
+            ]
+
+        before_rows = rows(ranked)
+        rerank_candidate_count = len(ranked)
+        fusion_ms = (time.perf_counter() - fusion_started) * 1000
+        rerank_meta = {
+            "requested": config.reranker,
+            "effective": "off",
+            "status": "disabled",
+            "error": None,
+            "pair_count": 0,
+            "latency_ms": 0.0,
+            "model": self.reranker.status(),
+            "fallback_order": "rrf" if effective == "hybrid" else effective,
+        }
+
+        def degrade(code, message, details=None):
+            error = {"code": code, "message": message}
+            batch["status"] = "degraded"
+            batch["error"] = batch["error"] or error
+            rerank_meta.update(status="degraded", error=error)
+            if details:
+                rerank_meta.update(details)
+
+        if config.policy_version != POLICY_VERSION:
+            degrade(
+                "unsupported_retrieval_policy", "Using base retrieval; frozen policy is unsupported"
+            )
+        elif config.reranker == "cross_encoder" and ranked:
+            rerank_started = time.perf_counter()
+            try:
+                if config.reranker_fingerprint != self.reranker.fingerprint:
+                    raise RerankerUnavailable(
+                        "reranker_fingerprint_mismatch",
+                        "Frozen reranker fingerprint is unsupported",
+                    )
+                result = self.reranker.score(
+                    query,
+                    [lookup[identity]["content"] for identity, _ in ranked],
+                    **({"cancel_event": cancel_event} if cancel_event is not None else {}),
+                )
+                values = result.get("scores") if isinstance(result, dict) else None
+                if (
+                    not isinstance(values, list)
+                    or len(values) != len(ranked)
+                    or any(
+                        type(value) not in (int, float) or not math.isfinite(value)
+                        for value in values
+                    )
+                ):
+                    raise RerankerUnavailable(
+                        "invalid_scores", "Local reranker returned invalid scores"
+                    )
+                positions = {identity: position for position, (identity, _) in enumerate(ranked)}
+                for (identity, _), value in zip(ranked, values, strict=True):
+                    scores[identity]["cross_encoder"] = float(value)
+                ranked = sorted(
+                    ((identity, scores[identity]["cross_encoder"]) for identity, _ in ranked),
+                    key=lambda row: (-row[1], positions[row[0]], row[0]),
+                )
+                rerank_meta.update({key: value for key, value in result.items() if key != "scores"})
+                rerank_meta.update(effective="cross_encoder", status="complete")
+            except RerankerUnavailable as error:
+                degrade(error.code, "Using pre-rerank order; " + str(error), error.metadata)
+            except (OSError, ValueError, RuntimeError):
+                degrade("reranker_failed", "Using pre-rerank order; local reranker failed")
+            rerank_meta["latency_ms"] = round((time.perf_counter() - rerank_started) * 1000, 3)
+        elif config.reranker == "cross_encoder":
+            rerank_meta["status"] = "empty_candidates"
+        after_rows = rows(ranked)
+        selection_started = time.perf_counter()
         selected, counts = [], Counter()
         # Prefer document diversity without returning fewer hits for a one-document corpus.
         for identity, _score in ranked:
@@ -564,6 +679,30 @@ class ProjectKnowledgeStore:
             model_fingerprint=manifest["embedding"]["fingerprint"],
             lexical="generation-scoped-bm25-jieba-v1",
             rrf_k=RRF_K,
+            reranker=rerank_meta,
+            candidates={
+                "lexical": rows(lexical[: config.candidate_n]),
+                "dense": rows(dense[: config.candidate_n]),
+                "fused": rows(fused),
+                "before_rerank": before_rows,
+                "after_rerank": after_rows,
+            },
+            phase_counts={
+                "scored_chunks": len(chunks),
+                "lexical_matches": len(lexical),
+                "dense_scored": len(dense),
+                "fusion_candidates": len(fused),
+                "rerank_candidates": rerank_candidate_count,
+                "returned": len(batch["items"]),
+            },
+            candidate_trace_truncated=len(fused) > 200 or len(ranked) > 200,
+            stage_timings_ms={
+                "lexical": round(lexical_ms, 3),
+                "dense": round(dense_ms, 3),
+                "fusion": round(fusion_ms, 3),
+                "reranker": rerank_meta["latency_ms"],
+                "selection": round((time.perf_counter() - selection_started) * 1000, 3),
+            },
         )
         batch["coverage"].update(
             candidate_chunks=len(chunks),

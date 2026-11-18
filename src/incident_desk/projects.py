@@ -13,6 +13,9 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from incident_desk.cloud_policy import CloudPolicy
+from incident_desk.knowledge.retrieval_config import RetrievalConfig
+
 PROJECT_ID = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}\Z")
 SECRET_NAME = re.compile(
     r"(^\.env(?:\.|$)|^\.git$|^\.ssh$|^\.aws$|^\.kube$|"
@@ -140,6 +143,8 @@ class ProjectProfile(BaseModel):
     config_files: list[str] = Field(default_factory=list, max_length=20)
     knowledge_paths: list[str] = Field(default_factory=list, max_length=30)
     retrieval_mode: Literal["lexical", "dense", "hybrid"] = "hybrid"
+    retrieval_config: RetrievalConfig = Field(default_factory=RetrievalConfig)
+    cloud_policy: CloudPolicy = Field(default_factory=CloudPolicy)
     history_enabled: bool = True
     business_probe: BusinessProbeProfile | None = None
     timezone: str = "Asia/Shanghai"

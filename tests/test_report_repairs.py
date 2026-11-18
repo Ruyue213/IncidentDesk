@@ -8,6 +8,7 @@ import pytest
 
 from incident_desk.agent.budget import BudgetExceeded
 from incident_desk.storage import Conflict, Repository
+from incident_desk.worker.runtime import WorkerLock
 
 REQUEST = {
     "question": "Inspect the actual service evidence",
@@ -131,9 +132,18 @@ async def test_legacy_runs_migrate_to_zero_and_reinitialization_preserves_repair
                 row for row in db.execute("PRAGMA table_info(runs)") if row[1] == "report_repairs"
             )
             assert column[2] == "INTEGER" and column[3] == 1 and str(column[4]) == "0"
-            assert db.execute("PRAGMA user_version").fetchone()[0] == 3
+            assert db.execute("PRAGMA user_version").fetchone()[0] == 4
+            columns = {row[1] for row in db.execute("PRAGMA table_info(worker_run_claims)")}
+            assert columns == {"run_id", "worker_id", "claimed_at"}
         assert await repo.consume_report_repair("legacy", "reference mismatch") == 1
+        assert await repo.claim_run("legacy", "previous-worker")
         await repo.init()
         assert (await repo.get_run("legacy"))["report_repairs"] == 1
+        assert (await repo.workload_counts())["claimed_count"] == 1
+        # API/schema initialization must not steal a live claim. Only the next
+        # exclusive worker owner can clear claims left by an earlier process.
+        with WorkerLock(tmp_path):
+            await repo.reset_worker_claims()
+        assert (await repo.workload_counts())["claimed_count"] == 0
     finally:
         await repo.close()

@@ -1,0 +1,103 @@
+{
+  "version": "synthetic-outcome-loop-v1",
+  "synthetic": true,
+  "started_at": "2026-11-18T06:27:06.211620+00:00",
+  "steps": [
+    {
+      "name": "unfinished_run_cannot_verify_or_label",
+      "passed": true
+    },
+    {
+      "name": "workflow_success_does_not_label_quality",
+      "passed": true,
+      "status": "SUCCEEDED"
+    },
+    {
+      "name": "failed_business_check_cannot_be_mislabeled_verified",
+      "passed": true
+    },
+    {
+      "name": "health_200_business_failure_and_explicit_failed_annotation",
+      "passed": true,
+      "business_ok": false
+    },
+    {
+      "name": "fresh_same_run_probe_supports_explicit_recovery_revision",
+      "passed": true,
+      "business_ok": true
+    },
+    {
+      "name": "stale_revision_rejected",
+      "passed": true
+    },
+    {
+      "name": "restart_persistence_latest_only_and_aggregate_privacy",
+      "passed": true
+    },
+    {
+      "name": "changed_project_version_cannot_verify_old_run",
+      "passed": true
+    }
+  ],
+  "model": "scripted reliability model, no neural inference",
+  "scope": "test-owned service/API/worker and data; no SocialEngine or real diagnosis",
+  "cloud_model_calls": 0,
+  "run_after_worker": {
+    "status": "SUCCEEDED",
+    "error": null,
+    "has_diagnosis": true
+  },
+  "aggregate": {
+    "schema": "incidentdesk-outcome-aggregate-v1",
+    "scope": "live",
+    "generated_at": "2026-11-18T06:27:08.380592+00:00",
+    "aggregation_only": true,
+    "assessment_source": "operator_supplied; not independently verified",
+    "total_runs": 1,
+    "terminal_runs": 1,
+    "task_succeeded_runs": 1,
+    "runs_with_report": 1,
+    "annotated_runs": 1,
+    "unannotated_terminal_runs": 0,
+    "annotation_coverage": 1.0,
+    "diagnosis_assessments": {
+      "confirmed": 0,
+      "rejected": 0,
+      "inconclusive": 1
+    },
+    "recovery_assessments": {
+      "verified": 1,
+      "failed": 0,
+      "not_attempted": 0
+    },
+    "confirmation_share_among_annotated": 0.0,
+    "attempted_recovery_annotations": 1,
+    "verified_share_among_attempted": 1.0,
+    "mode_counts": {
+      "live": 1,
+      "fixture": 0
+    },
+    "limitations": [
+      "Task SUCCEEDED does not establish a correct diagnosis or recovered service.",
+      "Local submissions are not authenticated independent human review.",
+      "Unannotated tasks and not-attempted recoveries remain visible in denominators.",
+      "Counts may still be sensitive; no automatic upload or cross-user claim is made.",
+      "Runs and follow-ups are not independent incidents or distinct users."
+    ]
+  },
+  "business_checks": {
+    "before": {
+      "http_status": 200,
+      "business_ok": false
+    },
+    "after": {
+      "http_status": 200,
+      "business_ok": true
+    }
+  },
+  "passed": true,
+  "finished_at": "2026-11-18T06:27:08.573160+00:00",
+  "children_reaped": true,
+  "private_raw_report_sha256": "b13cac30b4e71093630304e387dc630039d65558aa4a2ebfa022c2a97d81b881",
+  "test_note": "Single synthetic scenario. No independent real diagnosis, user, long-term result or SocialEngine effect."
+}

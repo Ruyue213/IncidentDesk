@@ -20,8 +20,11 @@ from sqlalchemy import (
     Table,
     Text,
     UniqueConstraint,
+    delete,
     event,
+    func,
     insert,
+    or_,
     select,
     update,
 )
@@ -56,6 +59,13 @@ runs = Table(
     Column("revision", Integer, nullable=False, default=0),
     Column("created_at", String, nullable=False),
     Column("updated_at", String, nullable=False),
+)
+run_claims = Table(
+    "worker_run_claims",
+    metadata,
+    Column("run_id", String, ForeignKey("runs.id"), primary_key=True),
+    Column("worker_id", String, nullable=False),
+    Column("claimed_at", String, nullable=False),
 )
 operations = Table(
     "operations",
@@ -185,7 +195,7 @@ class Repository:
                 await connection.exec_driver_sql(
                     "ALTER TABLE operations ADD COLUMN kind TEXT NOT NULL DEFAULT 'create_ticket'"
                 )
-            await connection.exec_driver_sql("PRAGMA user_version=3")
+            await connection.exec_driver_sql("PRAGMA user_version=4")
 
     async def close(self):
         await self.engine.dispose()
@@ -408,6 +418,111 @@ class Repository:
                 .all()
             )
             return [await self._public(connection, row) for row in rows]
+
+    async def reset_worker_claims(self):
+        """Only call after acquiring the lifetime WorkerLock: prior owner is then gone."""
+        async with self._write() as connection:
+            await connection.execute(delete(run_claims))
+
+    async def runnable_runs(self, limit=8):
+        """Waiting for a person occupies no execution slot and cannot starve queued work."""
+        async with self._read() as connection:
+            rows = await connection.execute(
+                select(runs.c.id)
+                .outerjoin(operations, operations.c.run_id == runs.c.id)
+                .outerjoin(run_claims, run_claims.c.run_id == runs.c.id)
+                .where(runs.c.status.not_in(TERMINAL), run_claims.c.run_id.is_(None))
+                .where(
+                    or_(
+                        runs.c.status != "WAITING_APPROVAL",
+                        runs.c.cancel_requested,
+                        operations.c.decision.is_not(None),
+                    )
+                )
+                .order_by(runs.c.created_at, runs.c.id)
+                .limit(limit)
+            )
+            return list(rows.scalars())
+
+    async def claim_run(self, run_id, worker_id):
+        """Atomic per-run claim; the single-worker lifetime lock remains mandatory."""
+        async with self._write() as connection:
+            row = await self._row(connection, run_id)
+            if row["status"] in TERMINAL:
+                return False
+            existing = (
+                await connection.execute(
+                    select(run_claims.c.worker_id).where(run_claims.c.run_id == run_id)
+                )
+            ).scalar_one_or_none()
+            if existing is not None:
+                return False
+            if row["status"] == "WAITING_APPROVAL" and not row["cancel_requested"]:
+                operation = await self._operation(connection, run_id)
+                if not operation or operation["decision"] is None:
+                    return False
+            await connection.execute(
+                insert(run_claims).values(run_id=run_id, worker_id=worker_id, claimed_at=now())
+            )
+            if row["status"] == "QUEUED" and not row["cancel_requested"]:
+                revision = row["revision"] + 1
+                await connection.execute(
+                    update(runs)
+                    .where(runs.c.id == run_id)
+                    .values(status="RUNNING", updated_at=now(), revision=revision)
+                )
+                await self._event(
+                    connection,
+                    run_id,
+                    "run.state_changed",
+                    {"status": "RUNNING"},
+                    f"state:{run_id}:{revision}",
+                )
+            return True
+
+    async def release_run_claim(self, run_id, worker_id):
+        async with self._write() as connection:
+            await connection.execute(
+                delete(run_claims).where(
+                    run_claims.c.run_id == run_id, run_claims.c.worker_id == worker_id
+                )
+            )
+
+    async def release_worker_claims(self, worker_id):
+        """After all local tasks drain, release even a claim cancelled before task startup."""
+        async with self._write() as connection:
+            await connection.execute(delete(run_claims).where(run_claims.c.worker_id == worker_id))
+
+    async def workload_counts(self):
+        async with self._read() as connection:
+            counts = dict(
+                (
+                    await connection.execute(
+                        select(runs.c.status, func.count()).group_by(runs.c.status)
+                    )
+                ).all()
+            )
+            claimed = (
+                await connection.execute(select(func.count()).select_from(run_claims))
+            ).scalar_one()
+            return {
+                "queued_count": counts.get("QUEUED", 0),
+                "claimed_count": claimed,
+                "waiting_approval_count": counts.get("WAITING_APPROVAL", 0),
+                "running_count": counts.get("RUNNING", 0),
+            }
+
+    async def cancelled_run_ids(self, run_ids):
+        if not run_ids:
+            return set()
+        async with self._read() as connection:
+            rows = await connection.execute(
+                select(runs.c.id).where(
+                    runs.c.id.in_(run_ids),
+                    runs.c.cancel_requested,
+                )
+            )
+            return set(rows.scalars())
 
     async def transition(self, run_id, status, diagnosis=None, error=None):
         if status not in STATUSES:

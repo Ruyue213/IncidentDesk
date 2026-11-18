@@ -33,6 +33,7 @@ FILES = (
     "frontend/tsconfig.json",
     "frontend/vite.config.ts",
     "docs/PRODUCT.md",
+    "docs/OUTCOMES.md",
     "docs/ARCHITECTURE.md",
 )
 PATTERNS = (
@@ -49,6 +50,7 @@ PATTERNS = (
     "data/fixtures/**/*.json",
     "evals/**/*.json",
     "evals/**/*.md",
+    "evals/retrieval-v2/runner-snapshots/*.py.txt",
     "third_party/licenses/*-LICENSE.txt",
     "docs/release/*.json",
     "docs/release/*.md",

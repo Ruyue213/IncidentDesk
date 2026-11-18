@@ -8,6 +8,8 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from incident_desk.cloud_policy import CloudPolicy
+from incident_desk.knowledge.retrieval_config import RetrievalConfig
 from incident_desk.projects import (
     BusinessProbeProfile,
     ProjectConflict,
@@ -32,6 +34,8 @@ class ProjectInput(BaseModel):
     config_files: list[str] = Field(default_factory=list, max_length=20)
     knowledge_paths: list[str] = Field(default_factory=list, max_length=30)
     retrieval_mode: Literal["lexical", "dense", "hybrid"] = "hybrid"
+    retrieval_config: RetrievalConfig = Field(default_factory=RetrievalConfig)
+    cloud_policy: CloudPolicy = Field(default_factory=CloudPolicy)
     history_enabled: bool = True
     business_probe: BusinessProbeProfile | None = None
     timezone: str = "Asia/Shanghai"
@@ -73,17 +77,28 @@ def create_projects_router(settings: Settings, store: ProjectStore | None = None
         if body.id is not None and body.id != project_id:
             raise HTTPException(422, "project ID must match the URL")
         try:
+            # Clients predating these settings must not reset an existing policy.
+            values = body.model_dump(exclude={"id", "expected_version"}) | {"id": project_id}
+            expected = body.expected_version
+            try:
+                prior = await asyncio.to_thread(store.get, project_id)
+            except ProjectNotFound:
+                prior = None
+            if prior is not None:
+                for key in ("retrieval_config", "cloud_policy"):
+                    if key not in body.model_fields_set:
+                        values[key] = getattr(prior, key).model_dump()
             profile = await asyncio.to_thread(
                 store.save,
-                body.model_dump(exclude={"id", "expected_version"}) | {"id": project_id},
-                body.expected_version,
+                values,
+                expected if expected is not None else prior.version if prior else 0,
             )
         except ProjectConflict as error:
             raise HTTPException(409, str(error)) from error
         except (ValueError, ValidationError, OSError) as error:
             # Pydantic errors may embed the submitted credential: return no raw error input.
             raise HTTPException(
-                422, "invalid project paths, local URLs, or process arguments"
+                422, "Invalid collection, retrieval, or cloud-data settings"
             ) from error
         return store.public(profile)
 
